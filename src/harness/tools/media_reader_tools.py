@@ -1,6 +1,7 @@
 """Media inspection tools: OCR, multimodal vision, and speech transcription."""
 
 import base64
+from io import BytesIO
 import io
 import os
 import subprocess
@@ -19,45 +20,43 @@ import torch
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
 
-def _load_image_data_url(path: str) -> str:
-    """Loads an image with PIL and converts it to a standard base64 data URL."""
-    with Image.open(path) as img:
-        fmt = (img.format or "PNG").upper()
-        save_fmt = "JPEG" if fmt in ("JPG", "JPEG") else ("PNG" if fmt in ("PNG", "WEBP") else "PNG")
-        mime = "jpeg" if save_fmt == "JPEG" else "png"
+def convert_to_base64(file_path):
+    pil_image = Image.open(file_path)
 
-        if img.mode not in ("RGB", "L") and save_fmt == "JPEG":
-            img = img.convert("RGB")
+    """
+    Convert PIL images to Base64 encoded strings
 
-        buffer = io.BytesIO()
-        img.save(buffer, format=save_fmt)
-        encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        return f"data:image/{mime};base64,{encoded}"
+    :param pil_image: PIL image
+    :return: Re-sized Base64 string
+    """
 
+    buffered = BytesIO()
+    pil_image.save(buffered, format="JPEG")  # You can change the format if needed
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return img_str
 
 
 @tool
 def ocr_image(
     path: str,
     prompt: str = "Transcribe all visible text, letters, numbers, and symbols in this image accurately and verbatim.",
-    model_name: str = "qwen3.5:2b",
 ) -> str:
     """Extracts and transcribes all text from an image using the local multimodal LLM (qwen3.5:2b).
 
     Args:
         path: Path to the image file.
         prompt: Specific transcription instruction (defaults to verbatim text extraction).
-        model_name: Vision LLM model name in Ollama (defaults to qwen3.5:2b).
     """
+    model_name = "qwen3.5:2b"
     if not os.path.exists(path):
         return f"Error: Image '{path}' not found."
     try:
-        data_url = _load_image_data_url(path)
+        img_base64 = convert_to_base64(path)
         llm = ChatOllama(model=model_name, reasoning=False)
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
-                {"type": "image_url", "image_url": data_url},
+                {"type": "image_url", "image_url": img_base64},
             ]
         )
         response = llm.invoke([message])
@@ -82,12 +81,12 @@ def inspect_image(
     if not os.path.exists(path):
         return f"Error: Image '{path}' not found."
     try:
-        data_url = _load_image_data_url(path)
+        img_base64 = convert_to_base64(path)
         llm = ChatOllama(model=model_name, reasoning=False)
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
-                {"type": "image_url", "image_url": data_url},
+                {"type": "image_url", "image_url": img_base64},
             ]
         )
         response = llm.invoke([message])

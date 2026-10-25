@@ -1,70 +1,95 @@
 import json
 import time
-from langchain_core.messages import SystemMessage, HumanMessage
+from typing import cast
+from typing_extensions import override
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_ollama import ChatOllama
-from harness.orchestrators.base import BaseOrchestrator, OrchestratorDecision
+from langchain_core.runnables import Runnable
+from harness.orchestrators.base import BaseOrchestrator, DualOrchestratorDecision
+from harness.react_agents.base import BaseReactAgent
 
 
 class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
-    def __init__(self, model_name: str, subagents: list, reasoning: bool = False) -> None:
+    reasoning: bool
+    llm_client: ChatOllama
+    structured_llm: Runnable[object, object]
+
+    def __init__(self, model_name: str, subagents: list[BaseReactAgent], reasoning: bool = False) -> None:
         super().__init__(model_name, subagents)
         self.reasoning = reasoning
         self.llm_client = ChatOllama(
             model=self.model_name,
             reasoning=self.reasoning,
         )
-        self.structured_llm = self.llm_client.with_structured_output(OrchestratorDecision, include_raw=True)
+        self.structured_llm = cast(
+            Runnable[object, object],
+            self.llm_client.with_structured_output(DualOrchestratorDecision, include_raw=True),
+        )
 
-    def orchestrate(self, state):
+    @override
+    def orchestrate(self, state: object) -> dict[str, str]:
         t_start = time.perf_counter()
-        result = self.structured_llm.invoke([
-            SystemMessage(content=f"""You are the orchestrator of a team of subagents. Given the task state, decide which subagent should act next and write a clear, concise instruction/prompt for it.
 
-Available subagents:
-{json.dumps(self.agent_descriptions)}"""),
+        raw_result = self.structured_llm.invoke([
+            SystemMessage(content=f"""
+            You are the orchestrator of a team of subagents.
+            Given the task state, decide which subagent should act next and write a clear, concise instruction/prompt for it.
+
+            Available subagents:
+            {json.dumps(self.agent_descriptions)}
+            """),
             HumanMessage(content=f"""{state}"""),
         ])
         t_end = time.perf_counter()
-        decision: OrchestratorDecision = result["parsed"]
-        raw_res = result["raw"]
 
-        if decision.next_subagent in self.actions:
+        decision = raw_result["parsed"]
+        raw_res = raw_result["raw"]
+
+        if decision:
+            next_subagent = decision.next_subagent
+            subagent_prompt = decision.subagent_prompt
+        elif raw_res:
+            next_subagent = str(raw_res.content).strip()
+            subagent_prompt = ""
+        else:
+            next_subagent = ""
+            subagent_prompt = ""
+
+        if next_subagent in self.subagents_names:
             error = None
         else:
-            error = f"Invalid action: {decision.next_subagent}. Allowed: {self.actions}"
+            error = f"Invalid action: {next_subagent}. Allowed: {self.subagents_names}"
 
-        self.log_step(state, decision, raw_res, t_end - t_start, error)
-
-        if error:
-            raise ValueError(error)
-
+        self.log_step(state, next_subagent, subagent_prompt, raw_res, t_end - t_start, error)
         return {
-            "next_subagent": decision.next_subagent,
-            "subagent_prompt": decision.subagent_prompt,
+            "next_subagent": next_subagent,
+            "subagent_prompt": subagent_prompt,
         }
 
-    def log_step(self, state_step, decision: OrchestratorDecision, raw_res, duration: float, error: str | None = None):
-        tokens_in = raw_res.usage_metadata.get("input_tokens") if hasattr(raw_res, "usage_metadata") and raw_res.usage_metadata else 0
-        tokens_out = raw_res.usage_metadata.get("output_tokens") if hasattr(raw_res, "usage_metadata") and raw_res.usage_metadata else 0
-        tokens_tot = raw_res.usage_metadata.get("total_tokens") if hasattr(raw_res, "usage_metadata") and raw_res.usage_metadata else (tokens_in + tokens_out)
+    def log_step(
+        self,
+        state_step: object,
+        next_subagent: str,
+        subagent_prompt: str,
+        raw_res: AIMessage | None,
+        duration: float,
+        error: str | None,
+    ) -> None:
+        tokens_in = raw_res.usage_metadata["input_tokens"]
+        tokens_out = raw_res.usage_metadata["output_tokens"]
 
         log = {
-            "timestamp": time.time(),
             "orchestrator_type": "LLMRoutedLLMPromptedOrchestrator",
             "model_name": self.model_name,
-            "dfm_model": None,
             "reasoning": self.reasoning,
-            "step": state_step,
-            "next_subagent": decision.next_subagent,
-            "confidence": None,
-            "probabilities": None,
-            "subagent_prompt": decision.subagent_prompt,
+            "state_step": state_step,
+            "next_subagent": next_subagent,
+            "subagent_prompt": subagent_prompt,
             "compute_time_seconds": duration,
             "tokens_input": tokens_in,
             "tokens_output": tokens_out,
-            "tokens_total": tokens_tot,
             "error": error,
         }
         print(log)
         with open("orchestrator.jsonl", "a") as f:
-            f.write(json.dumps(log) + "\n")
+            _ = f.write(json.dumps(log) + "\n")
