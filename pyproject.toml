@@ -1,0 +1,53 @@
+[project]
+name = "harness"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "MikeStefas", email = "mike.stefas@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "arxiv>=2.1.0",
+    "beautifulsoup4>=4.15.0",
+    "ddgs>=9.16.0",
+    "duckduckgo-search>=8.1.1",
+    "fastapi>=0.162.0",
+    "langchain>=1.4.6",
+    "langchain-community>=0.4.2",
+    "langchain-experimental>=0.4.2",
+    "langchain-ollama>=1.1.0",
+    "langchain-openai>=1.7.2",
+    "librosa>=0.11.0",
+    "markitdown>=0.1.8",
+    "matplotlib>=3.11.2",
+    "openai>=3.35.1",
+    "openai-whisper>=20250625",
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.6",
+    "pillow>=13.0.0",
+    "playwright>=1.64.0",
+    "pydub>=0.25.1",
+    "pypdf>=6.21.1",
+    "pytesseract>=0.3.13",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.2.4",
+    "python-pptx>=1.0.2",
+    "soundfile>=0.14.0",
+    "transformers>=5.20.2",
+    "typesafe-sdk>=0.7.5",
+    "uvicorn>=0.54.0",
+    "wikipedia>=1.4.0",
+]
+
+[project.scripts]
+harness = "harness:main"
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
