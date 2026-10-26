@@ -21,7 +21,7 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         model_name: str,
         subagents: list[BaseReactAgent],
         fdm_model: str = "clef-flash",
-        fdm_base_url: str,
+        fdm_base_url: str = "http://localhost:9931",
         reasoning: bool = False,
     ) -> None:
         super().__init__(model_name, subagents)

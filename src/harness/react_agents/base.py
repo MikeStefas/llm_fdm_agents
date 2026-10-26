@@ -3,15 +3,16 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMe
 from langchain_core.tools import Tool
 
 class BaseReactAgent(ABC):
-    subagent: str
+    subagent_name: str
+    subagent_model: str
     tools: list[Tool]
     tools_by_name: dict[str, Tool]
     description: str
     max_iter: int
 
-    def __init__(self, subagent_name: str, tools: list[Tool], description: str, max_iter: int = 10) -> None:
+    def __init__(self, subagent_name: str, subagent_model: str, tools: list[Tool], description: str, max_iter: int = 10) -> None:
         self.subagent_name = subagent_name
-        self.subagent = subagent_name
+        self.subagent_model = subagent_model
         self.tools = tools
         self.tools_by_name = {tool.name: tool for tool in tools}
         self.description = description

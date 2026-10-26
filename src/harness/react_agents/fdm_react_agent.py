@@ -17,10 +17,18 @@ class FDMReactAgent(BaseReactAgent):
     llm_client: ChatOllama
     criteria: dict[str, str]
 
-    def __init__(self, base_url: str, model_name: str, tools: list[Tool], description: str, reasoning: bool = False, max_iter: int = 10) -> None:
-        super().__init__(model_name, tools, description, max_iter)
+    def __init__(
+        self,
+        subagent_name: str,
+        subagent_model: str,
+        tools: list[Tool],
+        description: str,
+        base_url: str = "http://localhost:9931",
+        reasoning: bool = False,
+        max_iter: int = 10,
+    ) -> None:
+        super().__init__(subagent_name, subagent_model, tools, description, max_iter)
         self.base_url = base_url
-        self.model_name = model_name
         self.reasoning = reasoning
         self.criteria = self._get_criteria()
         self.fdm_client = TypeSafeClient(
@@ -28,7 +36,7 @@ class FDMReactAgent(BaseReactAgent):
             api_key="local",
         )
         self.llm_client = ChatOllama(
-            model=self.model_name,
+            model=self.subagent_model,
             reasoning=self.reasoning,
         )
 

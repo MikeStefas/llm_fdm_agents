@@ -14,12 +14,12 @@ class LLMReactAgent(BaseReactAgent):
     llm_client: ChatOllama
     bound_llm: Runnable[object, object]
 
-    def __init__(self, subagent: str, tools: list[Tool], description: str, reasoning: bool = False, max_iter: int = 10) -> None:
-        super().__init__(subagent, tools, description, max_iter)
+    def __init__(self, subagent_name: str, subagent_model: str, tools: list[Tool], description: str, reasoning: bool = False, max_iter: int = 10) -> None:
+        super().__init__(subagent_name, subagent_model, tools, description, max_iter)
 
         self.reasoning = reasoning
         self.llm_client = ChatOllama(
-            model=self.subagent,
+            model=self.subagent_model,
             reasoning=self.reasoning,
         )
         self.bound_llm = cast(Runnable[object, object], self.llm_client.bind_tools(self.tools))
