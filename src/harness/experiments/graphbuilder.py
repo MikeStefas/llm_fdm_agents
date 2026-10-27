@@ -15,14 +15,7 @@ from harness.experiments.initialised_subagents import (
     llm_media_reader_subagent,
     llm_web_search_subagent,
 )
-
-#setup log paths for said experiment
-llm_orchestrator.set_log_path("orchestrator.jsonl")
-llm_web_search_subagent.set_log_path("subagents.jsonl")
-llm_browser_subagent.set_log_path("subagents.jsonl")
-llm_doc_reader_subagent.set_log_path("subagents.jsonl")
-llm_media_reader_subagent.set_log_path("subagents.jsonl")
-llm_code_interpreter_subagent.set_log_path("subagents.jsonl")
+from harness.orchestrators.base import BaseOrchestrator
 
 llm_finalizer = ChatOllama(model=LLM_MODEL)
 
@@ -40,102 +33,105 @@ class State(BaseModel):
     subagent_prompt: Optional[str] = None
 
 
+class MultiAgentSystem():
+    def __init__(self, orchestrator: BaseOrchestrator, log_path: str):
+        self.orchestrator = orchestrator
+        self.subagents = orchestrator.get_subagents()
+        self.builder = StateGraph(State)
+        self.log_path = log_path
 
-def orchestrator_node(state: State) -> dict:
-    decision = llm_orchestrator(state)
-    return {
-        "next_subagent": str(decision).strip(),
-        "state_step": state.state_step + 1,
-    }
+    def build_graph(self):
+        self._create_orchestrator_node()
+        self._create_all_subagent_nodes()
+        self._create_finalizer_node()
+        self._add_edges()
+        self._set_log_path()
+        return self.builder.compile()
+    
+    def _create_orchestrator_node(self):
+        def orchestrator_node(state: State) -> dict:
+            decision = self.orchestrator(state)
+            return {
+                "next_subagent": str(decision).strip(),
+                "state_step": state.state_step + 1,
+            }
 
+        self.builder.add_node("orchestrator", orchestrator_node)
+        return orchestrator_node
 
-def web_search_node(state: State) -> dict:
-    res = llm_web_search_subagent(list(state.messages))
-    return {"messages": [AIMessage(content=res, name="web_search")]}
+    def _create_subagent_node(self, name: str, subagent):
+        def subagent_node(state: State) -> dict:
+            res = subagent(list(state.messages))
+            return {"messages": [AIMessage(content=res, name=name)]}
+        return subagent_node
 
+    def _create_all_subagent_nodes(self):
+        for subagent in self.subagents:
+            name = subagent.subagent_name
+            self.builder.add_node(name, self._create_subagent_node(name, subagent))
 
-def browser_node(state: State) -> dict:
-    res = llm_browser_subagent(list(state.messages))
-    return {"messages": [AIMessage(content=res, name="browser")]}
+    def _create_finalizer_node(self):
+        def finalizer_node(state: State) -> dict:
+            past_messages = []
+            for m in state.messages:
+                role = m.name
+                past_messages.append(f"[{role}]: {m.content}")
+            past_conversation = "\n".join(past_messages)
 
+            res = llm_finalizer.invoke([
+                SystemMessage(content=GAIA_FINALIZER_PROMPT),
+                HumanMessage(
+                    content=f"Here is the task and all intermediate subagent findings:\n{past_conversation}\n\nProvide the final answer:"
+                ),
+            ])
+            return {"messages": [AIMessage(content=str(res.content).strip(), name="finalizer")]}
 
-def doc_reader_node(state: State) -> dict:
-    res = llm_doc_reader_subagent(list(state.messages))
-    return {"messages": [AIMessage(content=res, name="doc_reader")]}
+        self.builder.add_node("finalizer", finalizer_node)
+        return finalizer_node
 
-
-def media_reader_node(state: State) -> dict:
-    res = llm_media_reader_subagent(list(state.messages))
-    return {"messages": [AIMessage(content=res, name="media_reader")]}
-
-
-def code_interpreter_node(state: State) -> dict:
-    res = llm_code_interpreter_subagent(list(state.messages))
-    return {"messages": [AIMessage(content=res, name="code_interpreter")]}
-
-
-def finalizer_node(state: State) -> dict:
-    history_lines = []
-    for m in state.messages:
-        role = getattr(m, "name", None) or m.type
-        history_lines.append(f"[{role}]: {m.content}")
-    formatted_history = "\n".join(history_lines)
-
-    res = llm_finalizer.invoke([
-        SystemMessage(content=GAIA_FINALIZER_PROMPT),
-        HumanMessage(content=f"Here is the task and all intermediate subagent findings:\n{formatted_history}\n\nProvide the final answer:"),
-    ])
-    return {"messages": [AIMessage(content=str(res.content).strip(), name="finalizer")]}
-
-
-builder = StateGraph(State)
-
-builder.add_node("orchestrator", orchestrator_node)
-builder.add_node("web_search", web_search_node)
-builder.add_node("browser", browser_node)
-builder.add_node("doc_reader", doc_reader_node)
-builder.add_node("media_reader", media_reader_node)
-builder.add_node("code_interpreter", code_interpreter_node)
-builder.add_node("finalizer", finalizer_node)
-
-builder.add_edge(START, "orchestrator")
-builder.add_edge("web_search", "orchestrator")
-builder.add_edge("browser", "orchestrator")
-builder.add_edge("doc_reader", "orchestrator")
-builder.add_edge("media_reader", "orchestrator")
-builder.add_edge("code_interpreter", "orchestrator")
-builder.add_edge("finalizer", END)  
-
-def condition(state: State) -> str:
-    if state.next_subagent == "web_search":
-        return "web_search"
-    if state.next_subagent == "browser":
-        return "browser"
-    if state.next_subagent == "doc_reader":
-        return "doc_reader"
-    if state.next_subagent == "media_reader":
-        return "media_reader"
-    if state.next_subagent == "code_interpreter":
-        return "code_interpreter"
-
-    return "finalizer"
+    def _add_edges(self):
+        self.builder.add_edge(START, "orchestrator")
+        for subagent in self.subagents:
+            name = subagent.subagent_name
+            self.builder.add_edge(name, "orchestrator")
+        self.builder.add_edge("finalizer", END)
+        self.builder.add_conditional_edges(
+            "orchestrator",
+            self._routing_condition,
+            {
+                "web_search": "web_search",
+                "browser": "browser",
+                "doc_reader": "doc_reader",
+                "media_reader": "media_reader",
+                "code_interpreter": "code_interpreter",
+                "finalizer": "finalizer",
+            },
+        )
 
 
-builder.add_conditional_edges(
-    "orchestrator",
-    condition,
-    {
-        "web_search": "web_search",
-        "browser": "browser",
-        "doc_reader": "doc_reader",
-        "media_reader": "media_reader",
-        "code_interpreter": "code_interpreter",
-        "finalizer": "finalizer",
-    },
-)
 
+    @staticmethod
+    def _routing_condition(state: State) -> str:
+        if state.next_subagent == "web_search":
+            return "web_search"
+        if state.next_subagent == "browser":
+            return "browser"
+        if state.next_subagent == "doc_reader":
+            return "doc_reader"
+        if state.next_subagent == "media_reader":
+            return "media_reader"
+        if state.next_subagent == "code_interpreter":
+            return "code_interpreter"
 
-agent = builder.compile()
+        return "finalizer"
+    
+    def _set_log_path(self):
+        for subagent in self.subagents:
+            subagent.set_log_path(self.log_path)
+        self.orchestrator.set_log_path(self.log_path)
+
+multi_agent_system = MultiAgentSystem(llm_orchestrator, "testing.jsonl")
+agent = multi_agent_system.build_graph()
 
 
 if __name__ == "__main__":

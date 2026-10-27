@@ -12,7 +12,7 @@ from harness.orchestrators import (
     LLMRoutedLLMPromptedOrchestrator,
 )
 
-fdm_orchestrator = FDMOrchestrator(
+fdm_orchestrator_with_llm_subagents = FDMOrchestrator(
     model_name=FDM_MODEL,
     subagents=LLM_SUBAGENTS,
     log_path=ORCHESTRATOR_LOG_PATH,
