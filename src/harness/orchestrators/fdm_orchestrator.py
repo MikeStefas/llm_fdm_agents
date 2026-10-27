@@ -15,10 +15,11 @@ class FDMOrchestrator(BaseOrchestrator):
         self,
         model_name: str,
         subagents: list[BaseReactAgent],
+        log_path: str = "orchestrator.jsonl",
         base_url: str = "http://localhost:9931",
         reasoning: bool = False,
     ) -> None:
-        super().__init__(model_name, subagents)
+        super().__init__(model_name, subagents, log_path)
         self.base_url = base_url
         self.reasoning = reasoning
         self.fdm_client = TypeSafeClient(
@@ -48,12 +49,13 @@ class FDMOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {decision}. Allowed: {self.subagents_names}"
 
-        self.log_step(state, decision, res, t_end - t_start, error)
+        step_val = getattr(state, "state_step", getattr(state, "step", 0)) if not isinstance(state, (int, str)) else 0
+        self.log_step(step_val, decision, res, t_end - t_start, error)
         return decision
 
     def log_step(
         self,
-        state_step: object,
+        state_step: int,
         decision: str,
         state_res: SystemOneResponse,
         duration: float,
@@ -80,5 +82,5 @@ class FDMOrchestrator(BaseOrchestrator):
             "error": error,
         }
         print(log)
-        with open("orchestrator.jsonl", "a") as f:
-            _ = f.write(json.dumps(log) + "\n")
+        with open(self.log_path, "a") as f:
+            _ = f.write(json.dumps(log, default=str) + "\n")

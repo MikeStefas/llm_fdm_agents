@@ -20,11 +20,12 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         self,
         model_name: str,
         subagents: list[BaseReactAgent],
+        log_path: str = "orchestrator.jsonl",
         fdm_model: str = "clef-flash",
         fdm_base_url: str = "http://localhost:9931",
         reasoning: bool = False,
     ) -> None:
-        super().__init__(model_name, subagents)
+        super().__init__(model_name, subagents, log_path)
         self.fdm_model = fdm_model
         self.fdm_base_url = fdm_base_url
         self.fdm_client = TypeSafeClient(
@@ -74,8 +75,9 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         t_end_prompting = time.perf_counter()
         subagent_prompt = str(prompt_res.content).strip()
 
+        step_val = getattr(state, "state_step", getattr(state, "step", 0)) if not isinstance(state, (int, str)) else 0
         self.log_step(
-            state,
+            step_val,
             chosen_agent,
             subagent_prompt,
             fdm_res,
@@ -92,7 +94,7 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
 
     def log_step(
         self,
-        state_step: object,
+        state_step: int,
         chosen_agent: str,
         subagent_prompt: str,
         fdm_res: SystemOneResponse | None,
@@ -132,5 +134,5 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
             "error": error,
         }
         print(log)
-        with open("orchestrator.jsonl", "a") as f:
-            _ = f.write(json.dumps(log) + "\n")
+        with open(self.log_path, "a") as f:
+            _ = f.write(json.dumps(log, default=str) + "\n")

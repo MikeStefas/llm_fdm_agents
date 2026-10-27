@@ -1,9 +1,9 @@
-import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from harness.config import (
+    FDM_BASE_URL,
+    FDM_MODEL,
+    LLM_MODEL,
+    ORCHESTRATOR_LOG_PATH,
+)
 from harness.experiments.initialised_subagents import LLM_SUBAGENTS
 from harness.orchestrators import (
     FDMOrchestrator,
@@ -12,13 +12,10 @@ from harness.orchestrators import (
     LLMRoutedLLMPromptedOrchestrator,
 )
 
-LLM_MODEL = os.getenv("ORCHESTRATOR_LLM_MODEL") 
-FDM_MODEL = os.getenv("ORCHESTRATOR_FDM_MODEL") 
-FDM_BASE_URL = os.getenv("FDM_BASE_URL") 
-
 fdm_orchestrator = FDMOrchestrator(
     model_name=FDM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     base_url=FDM_BASE_URL,
     reasoning=False,
 )
@@ -26,18 +23,21 @@ fdm_orchestrator = FDMOrchestrator(
 llm_orchestrator = LLMOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     reasoning=False,
 )
 
 llm_orchestrator_thinking = LLMOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     reasoning=True,
 )
 
 fdm_routed_llm_prompted_orchestrator = FDMRoutedLLMPromptedOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     fdm_model=FDM_MODEL,
     fdm_base_url=FDM_BASE_URL,
     reasoning=False,
@@ -46,6 +46,7 @@ fdm_routed_llm_prompted_orchestrator = FDMRoutedLLMPromptedOrchestrator(
 fdm_routed_llm_prompted_orchestrator_thinking = FDMRoutedLLMPromptedOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     fdm_model=FDM_MODEL,
     fdm_base_url=FDM_BASE_URL,
     reasoning=True,
@@ -54,11 +55,13 @@ fdm_routed_llm_prompted_orchestrator_thinking = FDMRoutedLLMPromptedOrchestrator
 llm_routed_llm_prompted_orchestrator = LLMRoutedLLMPromptedOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     reasoning=False,
 )
 
 llm_routed_llm_prompted_orchestrator_thinking = LLMRoutedLLMPromptedOrchestrator(
     model_name=LLM_MODEL,
     subagents=LLM_SUBAGENTS,
+    log_path=ORCHESTRATOR_LOG_PATH,
     reasoning=True,
 )

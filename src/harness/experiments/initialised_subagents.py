@@ -1,9 +1,8 @@
-import os
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
+from harness.config import (
+    FDM_BASE_URL,
+    SUBAGENT_MODEL,
+    SUBAGENTS_LOG_PATH,
+)
 from harness.react_agents import FDMReactAgent, LLMReactAgent
 from harness.tools import (
     BROWSER_TOOLS,
@@ -13,8 +12,7 @@ from harness.tools import (
     WEB_SEARCH_TOOLS,
 )
 
-MODEL_NAME = os.getenv("SUBAGENT_MODEL") 
-FDM_BASE_URL = os.getenv("FDM_BASE_URL") 
+MODEL_NAME = SUBAGENT_MODEL
 
 WEB_SEARCH_DESCRIPTION = (
     "Searches the web for up-to-date information, documentation, articles, and Wikipedia entries."
@@ -35,6 +33,7 @@ CODE_INTERPRETER_DESCRIPTION = (
 llm_web_search_subagent = LLMReactAgent(
     subagent_name="web_search",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=WEB_SEARCH_TOOLS,
     description=WEB_SEARCH_DESCRIPTION,
 )
@@ -42,6 +41,7 @@ llm_web_search_subagent = LLMReactAgent(
 llm_browser_subagent = LLMReactAgent(
     subagent_name="browser",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=BROWSER_TOOLS,
     description=BROWSER_DESCRIPTION,
 )
@@ -49,6 +49,7 @@ llm_browser_subagent = LLMReactAgent(
 llm_doc_reader_subagent = LLMReactAgent(
     subagent_name="doc_reader",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=DOC_READER_TOOLS,
     description=DOC_READER_DESCRIPTION,
 )
@@ -56,6 +57,7 @@ llm_doc_reader_subagent = LLMReactAgent(
 llm_media_reader_subagent = LLMReactAgent(
     subagent_name="media_reader",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=MEDIA_READER_TOOLS,
     description=MEDIA_READER_DESCRIPTION,
 )
@@ -63,6 +65,7 @@ llm_media_reader_subagent = LLMReactAgent(
 llm_code_interpreter_subagent = LLMReactAgent(
     subagent_name="code_interpreter",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=CODE_TOOLS,
     description=CODE_INTERPRETER_DESCRIPTION,
 )
@@ -79,6 +82,7 @@ LLM_SUBAGENTS = [
 fdm_web_search_subagent = FDMReactAgent(
     subagent_name="web_search",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=WEB_SEARCH_TOOLS,
     description=WEB_SEARCH_DESCRIPTION,
     base_url=FDM_BASE_URL,
@@ -87,6 +91,7 @@ fdm_web_search_subagent = FDMReactAgent(
 fdm_browser_subagent = FDMReactAgent(
     subagent_name="browser",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=BROWSER_TOOLS,
     description=BROWSER_DESCRIPTION,
     base_url=FDM_BASE_URL,
@@ -95,6 +100,7 @@ fdm_browser_subagent = FDMReactAgent(
 fdm_doc_reader_subagent = FDMReactAgent(
     subagent_name="doc_reader",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=DOC_READER_TOOLS,
     description=DOC_READER_DESCRIPTION,
     base_url=FDM_BASE_URL,
@@ -103,6 +109,7 @@ fdm_doc_reader_subagent = FDMReactAgent(
 fdm_media_reader_subagent = FDMReactAgent(
     subagent_name="media_reader",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=MEDIA_READER_TOOLS,
     description=MEDIA_READER_DESCRIPTION,
     base_url=FDM_BASE_URL,
@@ -111,6 +118,7 @@ fdm_media_reader_subagent = FDMReactAgent(
 fdm_code_interpreter_subagent = FDMReactAgent(
     subagent_name="code_interpreter",
     subagent_model=MODEL_NAME,
+    log_path=SUBAGENTS_LOG_PATH,
     tools=CODE_TOOLS,
     description=CODE_INTERPRETER_DESCRIPTION,
     base_url=FDM_BASE_URL,

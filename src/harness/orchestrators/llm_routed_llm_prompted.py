@@ -14,8 +14,14 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
     llm_client: ChatOllama
     structured_llm: Runnable[object, object]
 
-    def __init__(self, model_name: str, subagents: list[BaseReactAgent], reasoning: bool = False) -> None:
-        super().__init__(model_name, subagents)
+    def __init__(
+        self,
+        model_name: str,
+        subagents: list[BaseReactAgent],
+        log_path: str = "orchestrator.jsonl",
+        reasoning: bool = False,
+    ) -> None:
+        super().__init__(model_name, subagents, log_path)
         self.reasoning = reasoning
         self.llm_client = ChatOllama(
             model=self.model_name,
@@ -60,7 +66,8 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {next_subagent}. Allowed: {self.subagents_names}"
 
-        self.log_step(state, next_subagent, subagent_prompt, raw_res, t_end - t_start, error)
+        step_val = getattr(state, "state_step", getattr(state, "step", 0)) if not isinstance(state, (int, str)) else 0
+        self.log_step(step_val, next_subagent, subagent_prompt, raw_res, t_end - t_start, error)
         return {
             "next_subagent": next_subagent,
             "subagent_prompt": subagent_prompt,
@@ -68,7 +75,7 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
 
     def log_step(
         self,
-        state_step: object,
+        state_step: int,
         next_subagent: str,
         subagent_prompt: str,
         raw_res: AIMessage | None,
@@ -91,5 +98,5 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
             "error": error,
         }
         print(log)
-        with open("orchestrator.jsonl", "a") as f:
-            _ = f.write(json.dumps(log) + "\n")
+        with open(self.log_path, "a") as f:
+            _ = f.write(json.dumps(log, default=str) + "\n")

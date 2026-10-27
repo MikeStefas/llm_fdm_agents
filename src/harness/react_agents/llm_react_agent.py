@@ -14,8 +14,17 @@ class LLMReactAgent(BaseReactAgent):
     llm_client: ChatOllama
     bound_llm: Runnable[object, object]
 
-    def __init__(self, subagent_name: str, subagent_model: str, tools: list[Tool], description: str, reasoning: bool = False, max_iter: int = 10) -> None:
-        super().__init__(subagent_name, subagent_model, tools, description, max_iter)
+    def __init__(
+        self,
+        subagent_name: str,
+        subagent_model: str,
+        tools: list[Tool],
+        description: str,
+        log_path: str = "subagents.jsonl",
+        reasoning: bool = False,
+        max_iter: int = 10,
+    ) -> None:
+        super().__init__(subagent_name, subagent_model, tools, description, log_path, max_iter)
 
         self.reasoning = reasoning
         self.llm_client = ChatOllama(
@@ -87,5 +96,5 @@ class LLMReactAgent(BaseReactAgent):
             "error": error,
         }
         print(log)
-        with open("subagents.jsonl", "a") as f:
+        with open(self.log_path, "a") as f:
             _ = f.write(json.dumps(log) + "\n")

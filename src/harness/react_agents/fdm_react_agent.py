@@ -23,11 +23,12 @@ class FDMReactAgent(BaseReactAgent):
         subagent_model: str,
         tools: list[Tool],
         description: str,
+        log_path: str = "subagents.jsonl",
         base_url: str = "http://localhost:9931",
         reasoning: bool = False,
         max_iter: int = 10,
     ) -> None:
-        super().__init__(subagent_name, subagent_model, tools, description, max_iter)
+        super().__init__(subagent_name, subagent_model, tools, description, log_path, max_iter)
         self.base_url = base_url
         self.reasoning = reasoning
         self.criteria = self._get_criteria()
@@ -102,7 +103,7 @@ class FDMReactAgent(BaseReactAgent):
             "error": error,
         }
         print(log)
-        with open("subagents.jsonl", "a") as f:
+        with open(self.log_path, "a") as f:
             _ = f.write(json.dumps(log) + "\n")
 
 

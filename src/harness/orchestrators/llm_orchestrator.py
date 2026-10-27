@@ -11,8 +11,14 @@ class LLMOrchestrator(BaseOrchestrator):
     reasoning: bool
     llm_client: ChatOllama
 
-    def __init__(self, model_name: str, subagents: list[BaseReactAgent], reasoning: bool = False) -> None:
-        super().__init__(model_name, subagents)
+    def __init__(
+        self,
+        model_name: str,
+        subagents: list[BaseReactAgent],
+        log_path: str = "orchestrator.jsonl",
+        reasoning: bool = False,
+    ) -> None:
+        super().__init__(model_name, subagents, log_path)
         self.reasoning = reasoning
         self.llm_client = ChatOllama(
             model=self.model_name,
@@ -24,6 +30,15 @@ class LLMOrchestrator(BaseOrchestrator):
         
         t_start = time.perf_counter()
         
+        if hasattr(state, "messages"):
+            history_lines = []
+            for m in getattr(state, "messages"):
+                role = getattr(m, "name", None) or getattr(m, "type", "message")
+                history_lines.append(f"[{role}]: {m.content}")
+            state_text = "\n".join(history_lines)
+        else:
+            state_text = str(state)
+
         res = self.llm_client.invoke([
             SystemMessage(content=f"""
             You are the orchestrator of a team of subagents.
@@ -34,7 +49,7 @@ class LLMOrchestrator(BaseOrchestrator):
             
             Reply ONLY with a single word which is the name of the subagent to act next.
             """),
-            HumanMessage(content=f"""{state}""")
+            HumanMessage(content=state_text)
         ])
         t_end = time.perf_counter()
         
@@ -45,12 +60,13 @@ class LLMOrchestrator(BaseOrchestrator):
             error = f"Invalid action: {decision}. Allowed: {self.subagents_names}"
 
         if res:
-            self.log_step(state, decision, res, t_end - t_start, error)
+            step_val = getattr(state, "state_step", getattr(state, "step", 0)) if not isinstance(state, (int, str)) else 0
+            self.log_step(step_val, decision, res, t_end - t_start, error)
         return decision
     
     def log_step(
         self,
-        state_step: object,
+        state_step: int,
         decision: str,
         res: AIMessage,
         duration: float,
@@ -72,5 +88,5 @@ class LLMOrchestrator(BaseOrchestrator):
             "error": error,
         }
         print(log)
-        with open("orchestrator.jsonl", "a") as f:
-            _ = f.write(json.dumps(log) + "\n")
+        with open(self.log_path, "a") as f:
+            _ = f.write(json.dumps(log, default=str) + "\n")

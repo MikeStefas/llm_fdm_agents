@@ -11,5 +11,5 @@ class MessageState(BaseModel):
 
 
 class MessagePromptState(BaseModel):
-    prompt: Annotated[str, add_messages]
+    prompt: str | None = None
     messages: Annotated[list[AnyMessage], add_messages]
