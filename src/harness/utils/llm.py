@@ -1,7 +1,7 @@
 import os
 from langchain_openai import ChatOpenAI
 
-from harness.config import (
+from harness.utils.config import (
     LLM_MODEL,
     LLM_SEED,
     LLM_TOP_P,

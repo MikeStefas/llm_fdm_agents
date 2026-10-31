@@ -4,10 +4,14 @@ from typing_extensions import override
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from typesafe_sdk import TypeSafeClient, Choice, ChoiceAnswer, SystemOneResponse
-from harness.llm import get_chat_model
-from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv, get_chat_model
+from harness.utils.prompts import (
+    FDM_ROUTED_LLM_PROMPTED_ROUTING_INSTRUCTIONS,
+    FDM_ROUTED_LLM_PROMPTED_SUBAGENT_PROMPT_TEMPLATE,
+    FINALIZER_OPTION_DESCRIPTION,
+)
 
 
 class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
@@ -45,13 +49,14 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         t_start_routing = time.perf_counter()
 
         available_options = dict(self.agent_descriptions)
-        available_options["finalizer"] = "Conclude and synthesize the final answer when the task is finished or sufficient information is gathered."
+        available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
 
+        state_text = self.state_to_text(state)
         fdm_res = self.fdm_client.system_one(
-            state=str(state),
+            state=state_text,
             questions={
                 "next_subagent": Choice(
-                    instructions="You are the orchestrator of a team of subagents. Given the task state, decide which subagent should act next, or choose 'finalizer' if the task is complete.",
+                    instructions=FDM_ROUTED_LLM_PROMPTED_ROUTING_INSTRUCTIONS,
                     criteria=available_options,
                 )
             },
@@ -72,12 +77,11 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         t_start_prompting = time.perf_counter()
         agent_desc = available_options.get(chosen_agent, "")
         prompt_res = self.llm_client.invoke([
-            SystemMessage(content=f"""
-            You are the orchestrator of a team of subagents.
-            The option '{chosen_agent}' ({agent_desc}) has been selected to act next.
-            Write a clear, concise instruction/prompt for '{chosen_agent}' based on the task state.
-            """),
-            HumanMessage(content=f"""{state}"""),
+            SystemMessage(content=FDM_ROUTED_LLM_PROMPTED_SUBAGENT_PROMPT_TEMPLATE.format(
+                chosen_agent=chosen_agent,
+                agent_desc=agent_desc,
+            )),
+            HumanMessage(content=state_text),
         ])
         t_end_prompting = time.perf_counter()
         subagent_prompt = str(prompt_res.content).strip()

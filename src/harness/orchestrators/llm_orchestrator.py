@@ -3,10 +3,10 @@ import time
 from typing_extensions import override
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
-from harness.llm import get_chat_model
-from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv, get_chat_model
+from harness.utils.prompts import FINALIZER_OPTION_DESCRIPTION, LLM_ORCHESTRATOR_SYSTEM_PROMPT
 
 
 class LLMOrchestrator(BaseOrchestrator):
@@ -28,28 +28,17 @@ class LLMOrchestrator(BaseOrchestrator):
 
     @override
     def orchestrate(self, state: object) -> str:
-        
         t_start = time.perf_counter()
         
-        history_lines = []
-        for m in state.messages:
-            role = m.name if m.name else m.type
-            history_lines.append(f"[{role}]: {m.content}")
-        state_text = "\n".join(history_lines)
+        state_text = self.state_to_text(state)
 
         available_options = dict(self.agent_descriptions)
-        available_options["finalizer"] = "Conclude and synthesize the final answer when the task is finished or sufficient information is gathered."
+        available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
 
         res = self.llm_client.invoke([
-            SystemMessage(content=f"""
-            You are the orchestrator of a team of subagents.
-            Given the task state, decide which subagent should act next.
-
-            Available options:
-            {json.dumps(available_options)}
-            
-            Reply ONLY with a single word which is the name of the option to act next (e.g. one of the subagents, or 'finalizer' if the task is complete).
-            """),
+            SystemMessage(content=LLM_ORCHESTRATOR_SYSTEM_PROMPT.format(
+                available_options=json.dumps(available_options)
+            )),
             HumanMessage(content=state_text)
         ])
         t_end = time.perf_counter()
@@ -64,9 +53,8 @@ class LLMOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {decision}. Allowed: {allowed}"
 
-        if res:
-            step_val = state.state_step
-            self.log_step(step_val, decision, res, t_end - t_start, error)
+        step_val = state.state_step
+        self.log_step(step_val, decision, res, t_end - t_start, error)
         return decision
     
     def log_step(
@@ -93,5 +81,4 @@ class LLMOrchestrator(BaseOrchestrator):
             "response": decision,
             "error": error,
         }
-        print(log)
         append_to_csv(self.log_path, log)

@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel, Field
+from harness.utils.prompts import NEXT_SUBAGENT_FIELD_DESCRIPTION, SUBAGENT_PROMPT_FIELD_DESCRIPTION
 from harness.react_agents.base import BaseReactAgent
 
 
 class NextSubagentDecision(BaseModel):
-    next_subagent: str = Field(description="The name of the next subagent to act, or 'finalizer'")
+    next_subagent: str = Field(description=NEXT_SUBAGENT_FIELD_DESCRIPTION)
 
 
 class DualOrchestratorDecision(BaseModel):
-    next_subagent: str = Field(description="The name of the next subagent to act, or 'finalizer'")
-    subagent_prompt: str = Field(description="The instructions or prompt for the chosen subagent to execute")
+    next_subagent: str = Field(description=NEXT_SUBAGENT_FIELD_DESCRIPTION)
+    subagent_prompt: str = Field(description=SUBAGENT_PROMPT_FIELD_DESCRIPTION)
 
 
 class BaseOrchestrator(ABC):
@@ -36,6 +37,15 @@ class BaseOrchestrator(ABC):
 
     def get_subagents(self) -> list[BaseReactAgent]:
         return self.subagents
+
+    @staticmethod
+    def state_to_text(state: object) -> str:
+        messages = state if isinstance(state, list) else state.messages
+        lines: list[str] = []
+        for m in messages:
+            role = m.name if m.name else m.type
+            lines.append(f"[{role}]: {m.content}")
+        return "\n".join(lines)
 
     @abstractmethod
     def orchestrate(self, state: object) -> object:

@@ -26,6 +26,13 @@ class BaseReactAgent(ABC):
     def get_tools(self) -> list[Tool]:
         return self.tools
 
+    @staticmethod
+    def state_to_text(state: list[BaseMessage]) -> str:
+        lines: list[str] = []
+        for m in state:
+            role = m.name if m.name else m.type
+            lines.append(f"[{role}]: {m.content}")
+        return "\n".join(lines)
 
     @abstractmethod
     def react(self, state: list[BaseMessage], state_step: int = 0) -> str:

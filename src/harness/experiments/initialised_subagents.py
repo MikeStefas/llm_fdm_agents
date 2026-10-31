@@ -1,4 +1,4 @@
-from harness.config import (
+from harness.utils import (
     FDM_BASE_URL,
     LLM_MODEL,
     SUBAGENTS_LOG_PATH,

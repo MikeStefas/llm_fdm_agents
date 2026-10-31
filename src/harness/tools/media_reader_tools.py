@@ -17,7 +17,7 @@ from pytesseract import image_to_string
 import torch
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
-from harness.llm import get_chat_model
+from harness.utils.llm import get_chat_model
 
 
 def convert_to_base64(file_path: str) -> str:
@@ -89,6 +89,18 @@ def inspect_image(
         return f"Error inspecting image '{path}': {e}"
 
 
+_whisper_processor = None
+_whisper_model = None
+
+
+def _get_whisper():
+    global _whisper_processor, _whisper_model
+    if _whisper_processor is None or _whisper_model is None:
+        _whisper_processor = WhisperProcessor.from_pretrained("openai/whisper-base")
+        _whisper_model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-base")
+    return _whisper_processor, _whisper_model
+
+
 @tool
 def transcribe_audio(path: str) -> str:
     """Transcribes an audio file (.mp3, .wav, .m4a, .ogg) to text using HuggingFace Whisper model.
@@ -99,8 +111,7 @@ def transcribe_audio(path: str) -> str:
     if not os.path.exists(path):
         return f"Error: Audio file '{path}' not found."
     try:
-        processor = WhisperProcessor.from_pretrained("openai/whisper-base")
-        model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-base")
+        processor, model = _get_whisper()
 
         # Load audio and resample to 16kHz mono float32
         audio = pydub.AudioSegment.from_file(path)

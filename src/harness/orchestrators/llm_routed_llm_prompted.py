@@ -5,10 +5,10 @@ from typing_extensions import override
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable
 from langchain_openai import ChatOpenAI
-from harness.llm import get_chat_model
-from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator, DualOrchestratorDecision
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv, get_chat_model
+from harness.utils.prompts import FINALIZER_OPTION_DESCRIPTION, LLM_ROUTED_LLM_PROMPTED_SYSTEM_PROMPT
 
 
 class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
@@ -38,17 +38,15 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         t_start = time.perf_counter()
 
         available_options = dict(self.agent_descriptions)
-        available_options["finalizer"] = "Conclude and synthesize the final answer when the task is finished or sufficient information is gathered."
+        available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
+
+        state_text = self.state_to_text(state)
 
         raw_result = self.structured_llm.invoke([
-            SystemMessage(content=f"""
-            You are the orchestrator of a team of subagents.
-            Given the task state, decide which subagent should act next (or choose 'finalizer' if the task is complete) and write a clear, concise instruction/prompt for it.
-
-            Available options:
-            {json.dumps(available_options)}
-            """),
-            HumanMessage(content=f"""{state}"""),
+            SystemMessage(content=LLM_ROUTED_LLM_PROMPTED_SYSTEM_PROMPT.format(
+                available_options=json.dumps(available_options)
+            )),
+            HumanMessage(content=state_text),
         ])
         t_end = time.perf_counter()
 

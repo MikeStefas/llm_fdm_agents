@@ -15,7 +15,7 @@ from langchain_community.tools.file_management import (
 from langchain_core.tools import tool
 from markitdown import MarkItDown
 
-from harness.llm import get_chat_model
+from harness.utils.llm import get_chat_model
 
 _markitdown_converter = MarkItDown()
 
@@ -52,6 +52,7 @@ convert_file_to_markdown = convert_file_to_markdown_and_read
 
 DOC_READER_TOOLS = [
     convert_file_to_markdown_and_read,
+    read_file_tool,
     file_search_tool,
     list_directory_tool,
 ]

@@ -7,9 +7,13 @@ from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
 
-from harness.llm import get_chat_model
-from harness.logger import append_to_csv
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv, get_chat_model
+from harness.utils.prompts import (
+    FDM_REACT_FINISH_DESCRIPTION,
+    FDM_REACT_INSTRUCTIONS_TEMPLATE,
+    FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE,
+)
 
 
 class FDMReactAgent(BaseReactAgent):
@@ -160,9 +164,9 @@ class FDMReactAgent(BaseReactAgent):
     def _route(self, state: list[BaseMessage]) -> tuple[str, SystemOneResponse]:
         """FDM decides next tool call """
         res = self.fdm_client.system_one(
-            state=self._state_to_text(state),
+            state=self.state_to_text(state),
             questions={"next_action": Choice(
-                instructions=f"You are a react agent. Given the state of the task, decide the next action. You can use the following tools: {list(self.criteria.keys())}",
+                instructions=FDM_REACT_INSTRUCTIONS_TEMPLATE.format(tools=list(self.criteria.keys())),
                 criteria=self.criteria,
             )}
         )
@@ -172,28 +176,15 @@ class FDMReactAgent(BaseReactAgent):
         """LLM generates arguments for tool call"""
         tool = self.tools_by_name[action]
         bound_llm = self.llm_client.bind_tools([tool])
-        prompt = list(state) + [HumanMessage(content=f"Call the tool '{action}' with the required arguments.")]
+        prompt = list(state) + [HumanMessage(content=FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE.format(action=action))]
         return cast(AIMessage, bound_llm.invoke(prompt))
 
     def _get_criteria(self) -> dict[str, str]:
         criteria = {}
         for tool_name, tool in self.tools_by_name.items():
             criteria[tool_name] = tool.description or tool_name
-        criteria["Finish"] = "Stop when task is complete"
+        criteria["Finish"] = FDM_REACT_FINISH_DESCRIPTION
         return criteria
 
-
     def _state_to_text(self, state: list[BaseMessage]) -> str:
-        lines: list[str] = []
-        for msg in state:
-            content_str = str(msg.content)
-            if isinstance(msg, HumanMessage):
-                lines.append(f"User: {content_str}")
-            elif isinstance(msg, AIMessage):
-                lines.append(f"Assistant: {content_str}")
-            elif isinstance(msg, ToolMessage):
-                lines.append(f"Tool Output: {content_str}")
-            else:
-                msg_type: str = str(msg.type)
-                lines.append(f"{msg_type}: {content_str}")
-        return "\n".join(lines)
+        return self.state_to_text(state)

@@ -7,9 +7,8 @@ from langchain_core.runnables import Runnable
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 
-from harness.llm import get_chat_model
-from harness.logger import append_to_csv
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv, get_chat_model
 
 
 class LLMReactAgent(BaseReactAgent):

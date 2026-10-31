@@ -2,9 +2,10 @@ import json
 import time
 from typing_extensions import override
 from typesafe_sdk import TypeSafeClient, Choice, ChoiceAnswer, SystemOneResponse
-from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv
+from harness.utils.prompts import FDM_ORCHESTRATOR_INSTRUCTIONS, FINALIZER_OPTION_DESCRIPTION
 
 
 class FDMOrchestrator(BaseOrchestrator):
@@ -33,13 +34,13 @@ class FDMOrchestrator(BaseOrchestrator):
         t_start = time.perf_counter()
 
         available_options = dict(self.agent_descriptions)
-        available_options["finalizer"] = "Conclude and synthesize the final answer when the task is finished or sufficient information is gathered."
+        available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
 
         res = self.fdm_client.system_one(
-            state=str(state),
+            state=self.state_to_text(state),
             questions={
                 "next_subagent": Choice(
-                    instructions="You are the orchestrator of a team of subagents. Given the task state, decide which subagent should act next, or choose 'finalizer' if the task is complete.",
+                    instructions=FDM_ORCHESTRATOR_INSTRUCTIONS,
                     criteria=available_options,
                 )
             },
