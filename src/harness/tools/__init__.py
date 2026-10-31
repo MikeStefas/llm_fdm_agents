@@ -17,7 +17,6 @@ from harness.tools.media_reader_tools import (
 )
 from harness.tools.web_search_tools import (
     WEB_SEARCH_TOOLS,
-    arxiv_search_tool,
     duckduckgo_search_results,
     duckduckgo_search_run,
     file_from_url,
@@ -33,7 +32,6 @@ __all__ = [
     "CODE_TOOLS",
     "duckduckgo_search_run",
     "duckduckgo_search_results",
-    "arxiv_search_tool",
     "wikipedia_tool",
     "readable_webpage",
     "file_from_url",

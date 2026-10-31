@@ -2,6 +2,7 @@ import json
 import time
 from typing_extensions import override
 from typesafe_sdk import TypeSafeClient, Choice, ChoiceAnswer, SystemOneResponse
+from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
 
@@ -15,7 +16,7 @@ class FDMOrchestrator(BaseOrchestrator):
         self,
         model_name: str,
         subagents: list[BaseReactAgent],
-        log_path: str = "orchestrator.jsonl",
+        log_path: str = "orchestrator.csv",
         base_url: str = "http://localhost:9931",
         reasoning: bool = False,
     ) -> None:
@@ -31,25 +32,31 @@ class FDMOrchestrator(BaseOrchestrator):
     def orchestrate(self, state: object) -> str:
         t_start = time.perf_counter()
 
+        available_options = dict(self.agent_descriptions)
+        available_options["finalizer"] = "Conclude and synthesize the final answer when the task is finished or sufficient information is gathered."
+
         res = self.fdm_client.system_one(
             state=str(state),
             questions={
                 "next_subagent": Choice(
-                    instructions="You are the orchestrator of a team of subagents. Given the task state, decide which subagent should act next.",
-                    criteria=self.agent_descriptions,
+                    instructions="You are the orchestrator of a team of subagents. Given the task state, decide which subagent should act next, or choose 'finalizer' if the task is complete.",
+                    criteria=available_options,
                 )
             },
         )
         t_end = time.perf_counter()
 
-        decision = str(res.answers["next_subagent"].choice)
+        decision = str(res.answers["next_subagent"].choice).strip().strip("'\"").lower()
+        if decision == "finish":
+            decision = "finalizer"
 
-        if decision in self.subagents_names:
+        allowed = self.subagents_names + ["finalizer"]
+        if decision in allowed:
             error = None
         else:
-            error = f"Invalid action: {decision}. Allowed: {self.subagents_names}"
+            error = f"Invalid action: {decision}. Allowed: {allowed}"
 
-        step_val = getattr(state, "state_step", getattr(state, "step", 0)) if not isinstance(state, (int, str)) else 0
+        step_val = state.state_step
         self.log_step(step_val, decision, res, t_end - t_start, error)
         return decision
 
@@ -69,18 +76,17 @@ class FDMOrchestrator(BaseOrchestrator):
         tokens_out = state_res.usage.output_tokens
 
         log = {
-            "orchestrator_type": "FDMOrchestrator",
-            "model_name": self.model_name,
-            "reasoning": self.reasoning,
+            "node": "orchestrator",
+            "subagent_steps": None,
             "state_step": state_step,
-            "next_subagent": decision,
+            "reasoning": self.reasoning,
             "confidence": confidence,
             "probabilities": probabilities,
             "compute_time_seconds": duration,
             "tokens_input": tokens_in,
             "tokens_output": tokens_out,
+            "response": decision,
             "error": error,
         }
         print(log)
-        with open(self.log_path, "a") as f:
-            _ = f.write(json.dumps(log, default=str) + "\n")
+        append_to_csv(self.log_path, log)

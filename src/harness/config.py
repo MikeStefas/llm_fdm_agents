@@ -3,16 +3,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUBAGENT_MODEL: str = os.getenv("SUBAGENT_MODEL")
-SUBAGENTS_LOG_PATH: str = "subagents.json"
+# OpenRouter Configuration
+OPENROUTER_API_KEY: str | None = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 
-ORCHESTRATOR_LLM_MODEL: str = os.getenv("ORCHESTRATOR_LLM_MODEL") or os.getenv("LLM_MODEL")
-ORCHESTRATOR_FDM_MODEL: str = os.getenv("ORCHESTRATOR_FDM_MODEL") or os.getenv("FDM_MODEL")
-ORCHESTRATOR_LOG_PATH: str = "orchestrator.json"
+# LLM Model (single configuration variable)
+LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen/qwen-2.5-72b-instruct")
 
-LLM_MODEL: str = ORCHESTRATOR_LLM_MODEL
-FDM_MODEL: str = ORCHESTRATOR_FDM_MODEL
+# Aliases for backwards compatibility
+SUBAGENT_MODEL: str = LLM_MODEL
+ORCHESTRATOR_LLM_MODEL: str = LLM_MODEL
 
-# Service Endpoints
-FDM_BASE_URL: str = os.getenv("FDM_BASE_URL")
-OLLAMA_HOST: str = os.getenv("OLLAMA_HOST")
+# FDM (System-1) Configuration
+FDM_MODEL: str = os.getenv("FDM_MODEL", "clef-flash")
+ORCHESTRATOR_FDM_MODEL: str = FDM_MODEL
+FDM_BASE_URL: str = os.getenv("FDM_BASE_URL", "http://localhost:9931")
+
+# Logging
+SUBAGENTS_LOG_PATH: str = "subagents.csv"
+ORCHESTRATOR_LOG_PATH: str = "orchestrator.csv"
+
+# Reproducibility settings
+LLM_SEED: int = int(os.getenv("LLM_SEED", "42"))
+LLM_TOP_P: float = float(os.getenv("LLM_TOP_P", "1.0"))

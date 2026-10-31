@@ -4,11 +4,11 @@ from harness.react_agents.base import BaseReactAgent
 
 
 class NextSubagentDecision(BaseModel):
-    next_subagent: str = Field(description="The name of the next subagent to act, or 'Finish'")
+    next_subagent: str = Field(description="The name of the next subagent to act, or 'finalizer'")
 
 
 class DualOrchestratorDecision(BaseModel):
-    next_subagent: str = Field(description="The name of the next subagent to act, or 'Finish'")
+    next_subagent: str = Field(description="The name of the next subagent to act, or 'finalizer'")
     subagent_prompt: str = Field(description="The instructions or prompt for the chosen subagent to execute")
 
 
@@ -23,7 +23,7 @@ class BaseOrchestrator(ABC):
         self,
         model_name: str,
         subagents: list[BaseReactAgent],
-        log_path: str = "orchestrator.jsonl",
+        log_path: str = "orchestrator.csv",
     ) -> None:
         self.model_name = model_name
         self.subagents = subagents

@@ -1,6 +1,6 @@
 from harness.config import (
     FDM_BASE_URL,
-    SUBAGENT_MODEL,
+    LLM_MODEL,
     SUBAGENTS_LOG_PATH,
 )
 from harness.react_agents import FDMReactAgent, LLMReactAgent
@@ -12,7 +12,7 @@ from harness.tools import (
     WEB_SEARCH_TOOLS,
 )
 
-MODEL_NAME = SUBAGENT_MODEL
+MODEL_NAME = LLM_MODEL
 
 WEB_SEARCH_DESCRIPTION = (
     "Searches the web for up-to-date information, documentation, articles, and Wikipedia entries."

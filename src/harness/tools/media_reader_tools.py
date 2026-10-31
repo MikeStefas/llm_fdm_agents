@@ -8,10 +8,8 @@ import subprocess
 import tempfile
 import warnings
 
-
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
-from langchain_ollama import ChatOllama
 import numpy as np
 from PIL import Image
 import pydub
@@ -19,48 +17,46 @@ from pytesseract import image_to_string
 import torch
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
+from harness.llm import get_chat_model
 
-def convert_to_base64(file_path):
+
+def convert_to_base64(file_path: str) -> str:
+    """Convert image to Base64 encoded JPEG string."""
     pil_image = Image.open(file_path)
-
-    """
-    Convert PIL images to Base64 encoded strings
-
-    :param pil_image: PIL image
-    :return: Re-sized Base64 string
-    """
-
     buffered = BytesIO()
-    pil_image.save(buffered, format="JPEG")  # You can change the format if needed
-    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    return img_str
+    # Convert RGBA/palette to RGB if necessary for JPEG
+    if pil_image.mode in ("RGBA", "P"):
+        pil_image = pil_image.convert("RGB")
+    pil_image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
 @tool
 def ocr_image(
     path: str,
     prompt: str = "Transcribe all visible text, letters, numbers, and symbols in this image accurately and verbatim.",
+    model_name: str | None = None,
 ) -> str:
-    """Extracts and transcribes all text from an image using the local multimodal LLM (qwen3.5:2b).
+    """Extracts and transcribes all text from an image using an OpenRouter multimodal vision LLM.
 
     Args:
         path: Path to the image file.
         prompt: Specific transcription instruction (defaults to verbatim text extraction).
+        model_name: Optional vision model name.
     """
-    model_name = "qwen3.5:2b"
     if not os.path.exists(path):
         return f"Error: Image '{path}' not found."
     try:
         img_base64 = convert_to_base64(path)
-        llm = ChatOllama(model=model_name, reasoning=False)
+        llm = get_chat_model(reasoning=False)
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
-                {"type": "image_url", "image_url": img_base64},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}},
             ]
         )
         response = llm.invoke([message])
-        return response.content.strip() or "No text detected in image."
+        return str(response.content).strip() or "No text detected in image."
     except Exception as e:
         return f"Error extracting text with LLM: {e}"
 
@@ -69,32 +65,28 @@ def ocr_image(
 def inspect_image(
     path: str,
     prompt: str = "Describe this image in detail. If there is text, charts, numbers, objects or diagrams, report them accurately.",
-    model_name: str = "qwen3.5:2b",
 ) -> str:
-    """Inspects an image using the local multimodal LLM client (ChatOllama) combined with OCR.
+    """Inspects an image using an OpenRouter multimodal vision LLM.
 
     Args:
         path: Absolute or relative path to the image file.
         prompt: Specific question or instruction about what to look for in the image.
-        model_name: Multimodal model name in Ollama (defaults to qwen3.5:2b).
     """
     if not os.path.exists(path):
         return f"Error: Image '{path}' not found."
     try:
         img_base64 = convert_to_base64(path)
-        llm = ChatOllama(model=model_name, reasoning=False)
+        llm = get_chat_model(reasoning=False)
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
-                {"type": "image_url", "image_url": img_base64},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_base64}"}},
             ]
         )
         response = llm.invoke([message])
-        return response.content
+        return str(response.content)
     except Exception as e:
         return f"Error inspecting image '{path}': {e}"
-
-
 
 
 @tool

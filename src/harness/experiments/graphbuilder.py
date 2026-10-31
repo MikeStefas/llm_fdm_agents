@@ -1,7 +1,8 @@
+import json
+import time
 from typing import Annotated, Optional
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemMessage
-from langchain_ollama import ChatOllama
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
@@ -15,9 +16,12 @@ from harness.experiments.initialised_subagents import (
     llm_media_reader_subagent,
     llm_web_search_subagent,
 )
+from harness.llm import get_chat_model
+from harness.logger import append_to_csv
 from harness.orchestrators.base import BaseOrchestrator
 
-llm_finalizer = ChatOllama(model=LLM_MODEL)
+llm_finalizer = get_chat_model()
+
 
 GAIA_FINALIZER_PROMPT = """You are the finalizer agent in a GAIA benchmark evaluation.
 Given the task and the intermediate steps/results from the subagents, synthesize the findings and output ONLY the final answer to the user's question.
@@ -51,6 +55,12 @@ class MultiAgentSystem():
     def _create_orchestrator_node(self):
         def orchestrator_node(state: State) -> dict:
             decision = self.orchestrator(state)
+            if isinstance(decision, dict):
+                return {
+                    "next_subagent": str(decision["next_subagent"]).strip(),
+                    "subagent_prompt": str(decision["subagent_prompt"]),
+                    "state_step": state.state_step + 1,
+                }
             return {
                 "next_subagent": str(decision).strip(),
                 "state_step": state.state_step + 1,
@@ -61,8 +71,11 @@ class MultiAgentSystem():
 
     def _create_subagent_node(self, name: str, subagent):
         def subagent_node(state: State) -> dict:
-            res = subagent(list(state.messages))
-            return {"messages": [AIMessage(content=res, name=name)]}
+            messages = list(state.messages)
+            if state.subagent_prompt:
+                messages.append(HumanMessage(content=state.subagent_prompt))
+            res = subagent(messages, state_step=state.state_step)
+            return {"messages": [AIMessage(content=res, name=name)], "subagent_prompt": None}
         return subagent_node
 
     def _create_all_subagent_nodes(self):
@@ -72,22 +85,58 @@ class MultiAgentSystem():
 
     def _create_finalizer_node(self):
         def finalizer_node(state: State) -> dict:
+            t_start = time.perf_counter()
             past_messages = []
             for m in state.messages:
-                role = m.name
+                role = m.name if m.name else m.type
                 past_messages.append(f"[{role}]: {m.content}")
             past_conversation = "\n".join(past_messages)
 
-            res = llm_finalizer.invoke([
-                SystemMessage(content=GAIA_FINALIZER_PROMPT),
-                HumanMessage(
-                    content=f"Here is the task and all intermediate subagent findings:\n{past_conversation}\n\nProvide the final answer:"
-                ),
-            ])
-            return {"messages": [AIMessage(content=str(res.content).strip(), name="finalizer")]}
+            try:
+                res = llm_finalizer.invoke([
+                    SystemMessage(content=GAIA_FINALIZER_PROMPT),
+                    HumanMessage(
+                        content=f"Here is the task and all intermediate subagent findings:\n{past_conversation}\n\nProvide the final answer:"
+                    ),
+                ])
+                output_text = str(res.content).strip()
+                duration = time.perf_counter() - t_start
+                usage = res.usage_metadata
+                tokens_in = usage["input_tokens"]
+                tokens_out = usage["output_tokens"]
+                self.log_finalizer_step(state.state_step, tokens_in, tokens_out, duration, output_text, None)
+                return {"messages": [AIMessage(content=output_text, name="finalizer")]}
+            except Exception as e:
+                duration = time.perf_counter() - t_start
+                error = str(e)
+                self.log_finalizer_step(state.state_step, 0, 0, duration, None, error)
+                raise
 
         self.builder.add_node("finalizer", finalizer_node)
         return finalizer_node
+
+    def log_finalizer_step(
+        self,
+        state_step: int,
+        tokens_in: int,
+        tokens_out: int,
+        duration: float,
+        final_response: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        log = {
+            "node": "finalizer",
+            "subagent_steps": None,
+            "state_step": state_step,
+            "reasoning": False,
+            "compute_time_seconds": duration,
+            "tokens_input": tokens_in,
+            "tokens_output": tokens_out,
+            "response": final_response,
+            "error": error,
+        }
+        print(log)
+        append_to_csv(self.log_path, log)
 
     def _add_edges(self):
         self.builder.add_edge(START, "orchestrator")
@@ -129,14 +178,3 @@ class MultiAgentSystem():
         for subagent in self.subagents:
             subagent.set_log_path(self.log_path)
         self.orchestrator.set_log_path(self.log_path)
-
-multi_agent_system = MultiAgentSystem(llm_orchestrator, "testing.jsonl")
-agent = multi_agent_system.build_graph()
-
-
-if __name__ == "__main__":
-    from langchain_core.messages import HumanMessage
-
-    query = "A paper about AI regulation that was originally submitted to arXiv.org in June 2022 shows a figure with three axes, where each axis has a label word at both ends. Which of these words is used to describe a type of society in a Physics and Society article submitted to arXiv.org on August 11, 2016?"
-    print(f"Query: {query}")
-    result = agent.invoke({"messages": [HumanMessage(content=query)]})
