@@ -36,6 +36,7 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
     @override
     def orchestrate(self, state: object) -> dict[str, str]:
         t_start = time.perf_counter()
+        task_id = state.get("task_id") if isinstance(state, dict) else state.task_id
 
         available_options = dict(self.agent_descriptions)
         available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
@@ -72,8 +73,8 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {next_subagent}. Allowed: {allowed}"
 
-        step_val = state.state_step
-        self.log_step(step_val, next_subagent, subagent_prompt, raw_res, t_end - t_start, error)
+        step_val = state.get("state_step", 0) if isinstance(state, dict) else state.state_step
+        self.log_step(step_val, next_subagent, subagent_prompt, raw_res, t_end - t_start, error, task_id=task_id)
         return {
             "next_subagent": next_subagent,
             "subagent_prompt": subagent_prompt,
@@ -87,10 +88,11 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         raw_res: AIMessage | None,
         duration: float,
         error: str | None,
+        task_id: str | None = None,
     ) -> None:
         usage = raw_res.usage_metadata
-        tokens_in = usage["input_tokens"]
-        tokens_out = usage["output_tokens"]
+        llm_tkns_in = usage["input_tokens"]
+        llm_tkns_out = usage["output_tokens"]
 
         response = {
             "next_subagent": next_subagent,
@@ -98,13 +100,16 @@ class LLMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         }
 
         log = {
+            "task_id": task_id,
             "node": "orchestrator",
             "subagent_steps": None,
             "state_step": state_step,
             "reasoning": self.reasoning,
             "compute_time_seconds": duration,
-            "tokens_input": tokens_in,
-            "tokens_output": tokens_out,
+            "llm_tkns_in": llm_tkns_in,
+            "llm_tkns_out": llm_tkns_out,
+            "fdm_tkns_in": 0,
+            "fdm_tkns_out": 0,
             "response": response,
             "error": error,
         }

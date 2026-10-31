@@ -29,6 +29,7 @@ class LLMOrchestrator(BaseOrchestrator):
     @override
     def orchestrate(self, state: object) -> str:
         t_start = time.perf_counter()
+        task_id = state.get("task_id") if isinstance(state, dict) else state.task_id
         
         state_text = self.state_to_text(state)
 
@@ -53,8 +54,8 @@ class LLMOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {decision}. Allowed: {allowed}"
 
-        step_val = state.state_step
-        self.log_step(step_val, decision, res, t_end - t_start, error)
+        step_val = state.get("state_step", 0) if isinstance(state, dict) else state.state_step
+        self.log_step(step_val, decision, res, t_end - t_start, error, task_id=task_id)
         return decision
     
     def log_step(
@@ -64,20 +65,23 @@ class LLMOrchestrator(BaseOrchestrator):
         res: AIMessage,
         duration: float,
         error: str | None,
+        task_id: str | None = None,
     ) -> None:
-
         usage = res.usage_metadata
-        tokens_in = usage["input_tokens"]
-        tokens_out = usage["output_tokens"]
+        llm_tkns_in = usage["input_tokens"]
+        llm_tkns_out = usage["output_tokens"]
 
         log = {
+            "task_id": task_id,
             "node": "orchestrator",
             "subagent_steps": None,
             "state_step": state_step,
             "reasoning": self.reasoning,
             "compute_time_seconds": duration,
-            "tokens_input": tokens_in,
-            "tokens_output": tokens_out,
+            "llm_tkns_in": llm_tkns_in,
+            "llm_tkns_out": llm_tkns_out,
+            "fdm_tkns_in": 0,
+            "fdm_tkns_out": 0,
             "response": decision,
             "error": error,
         }

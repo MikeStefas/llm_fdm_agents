@@ -35,10 +35,10 @@ class LLMReactAgent(BaseReactAgent):
         self.bound_llm = cast(Runnable[object, object], self.llm_client.bind_tools(self.tools))
 
     @override
-    def react(self, state: list[BaseMessage], state_step: int = 0) -> str:
+    def react(self, state: list[BaseMessage], state_step: int = 0, task_id: str | None = None) -> str:
         t_start = time.perf_counter()
-        tot_tokens_in = 0
-        tot_tokens_out = 0
+        llm_tkns_in = 0
+        llm_tkns_out = 0
         last_error = None
         substep_count = 0
         final_res = None
@@ -50,8 +50,8 @@ class LLMReactAgent(BaseReactAgent):
                 # llm decides next action and args
                 res = self.bound_llm.invoke(messages)
                 usage = res.usage_metadata
-                tot_tokens_in += usage["input_tokens"]
-                tot_tokens_out += usage["output_tokens"]
+                llm_tkns_in += usage["input_tokens"]
+                llm_tkns_out += usage["output_tokens"]
 
                 # If no tool calls, this is the final natural response directly
                 if not res.tool_calls:
@@ -90,36 +90,63 @@ class LLMReactAgent(BaseReactAgent):
                 )
                 final_res = self.llm_client.invoke(messages)
                 usage = final_res.usage_metadata
-                tot_tokens_in += usage["input_tokens"]
-                tot_tokens_out += usage["output_tokens"]
+                llm_tkns_in += usage["input_tokens"]
+                llm_tkns_out += usage["output_tokens"]
 
             output_text = str(final_res.content)
             duration = time.perf_counter() - t_start
-            self.log_step(substep_count, tot_tokens_in, tot_tokens_out, duration, output_text, last_error, state_step=state_step)
+            self.log_step(
+                substep_count,
+                llm_tkns_in,
+                llm_tkns_out,
+                0,
+                0,
+                duration,
+                output_text,
+                last_error,
+                state_step=state_step,
+                task_id=task_id,
+            )
             return output_text
         except Exception as e:
-            self.log_step(substep_count, tot_tokens_in, tot_tokens_out, time.perf_counter() - t_start, error=str(e), state_step=state_step)
+            self.log_step(
+                substep_count,
+                llm_tkns_in,
+                llm_tkns_out,
+                0,
+                0,
+                time.perf_counter() - t_start,
+                error=str(e),
+                state_step=state_step,
+                task_id=task_id,
+            )
             raise
 
     @override
     def log_step(
         self,
         substep_count: int,
-        tokens_in: int,
-        tokens_out: int,
+        llm_tkns_in: int,
+        llm_tkns_out: int,
+        fdm_tkns_in: int,
+        fdm_tkns_out: int,
         duration: float,
         final_response: str | None = None,
         error: str | None = None,
         state_step: int = 0,
+        task_id: str | None = None,
     ) -> None:
         log = {
+            "task_id": task_id,
             "node": self.subagent_name,
             "subagent_steps": substep_count,
             "state_step": state_step,
             "reasoning": self.reasoning,
             "compute_time_seconds": duration,
-            "tokens_input": tokens_in,
-            "tokens_output": tokens_out,
+            "llm_tkns_in": llm_tkns_in,
+            "llm_tkns_out": llm_tkns_out,
+            "fdm_tkns_in": 0,
+            "fdm_tkns_out": 0,
             "response": final_response,
             "error": error,
         }

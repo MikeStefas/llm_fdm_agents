@@ -51,6 +51,5 @@ class BaseOrchestrator(ABC):
     def orchestrate(self, state: object) -> object:
         pass
 
-
     def __call__(self, state: object) -> object:
         return self.orchestrate(state)

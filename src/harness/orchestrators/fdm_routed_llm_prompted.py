@@ -47,11 +47,13 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
     def orchestrate(self, state: object) -> dict[str, str]:
         # stage 1: fdm routes and decides next subagent
         t_start_routing = time.perf_counter()
+        task_id = state.get("task_id") if isinstance(state, dict) else state.task_id
 
         available_options = dict(self.agent_descriptions)
         available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
 
         state_text = self.state_to_text(state)
+
         fdm_res = self.fdm_client.system_one(
             state=state_text,
             questions={
@@ -73,9 +75,10 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {chosen_agent}. Allowed: {allowed}"
 
-        # stage 2: llm gens txt
+        # stage 2: llm generates instructions for the chosen agent
         t_start_prompting = time.perf_counter()
         agent_desc = available_options.get(chosen_agent, "")
+
         prompt_res = self.llm_client.invoke([
             SystemMessage(content=FDM_ROUTED_LLM_PROMPTED_SUBAGENT_PROMPT_TEMPLATE.format(
                 chosen_agent=chosen_agent,
@@ -86,7 +89,7 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         t_end_prompting = time.perf_counter()
         subagent_prompt = str(prompt_res.content).strip()
 
-        step_val = state.state_step
+        step_val = state.get("state_step", 0) if isinstance(state, dict) else state.state_step
         self.log_step(
             step_val,
             chosen_agent,
@@ -96,6 +99,7 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
             t_end_routing - t_start_routing,
             t_end_prompting - t_start_prompting,
             error,
+            task_id=task_id,
         )
 
         return {
@@ -113,6 +117,7 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         fdm_duration: float,
         llm_duration: float,
         error: str | None,
+        task_id: str | None = None,
     ) -> None:
         ans = fdm_res.answers["next_subagent"]
         confidence = ans.confidence 
@@ -125,15 +130,13 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
         llm_tokens_in = prompt_usage["input_tokens"]
         llm_tokens_out = prompt_usage["output_tokens"]
 
-        tokens_in = fdm_tokens_in + llm_tokens_in
-        tokens_out = fdm_tokens_out + llm_tokens_out
-
         response = {
             "next_subagent": chosen_agent,
             "subagent_prompt": subagent_prompt,
         }
 
         log = {
+            "task_id": task_id,
             "node": "orchestrator",
             "subagent_steps": None,
             "state_step": state_step,
@@ -143,8 +146,10 @@ class FDMRoutedLLMPromptedOrchestrator(BaseOrchestrator):
             "compute_time_seconds": fdm_duration + llm_duration,
             "fdm_time_seconds": fdm_duration,
             "llm_time_seconds": llm_duration,
-            "tokens_input": tokens_in,
-            "tokens_output": tokens_out,
+            "llm_tkns_in": llm_tokens_in,
+            "llm_tkns_out": llm_tokens_out,
+            "fdm_tkns_in": fdm_tokens_in,
+            "fdm_tkns_out": fdm_tokens_out,
             "response": response,
             "error": error,
         }

@@ -32,6 +32,7 @@ class FDMOrchestrator(BaseOrchestrator):
     @override
     def orchestrate(self, state: object) -> str:
         t_start = time.perf_counter()
+        task_id = state.get("task_id") if isinstance(state, dict) else state.task_id
 
         available_options = dict(self.agent_descriptions)
         available_options["finalizer"] = FINALIZER_OPTION_DESCRIPTION
@@ -57,8 +58,8 @@ class FDMOrchestrator(BaseOrchestrator):
         else:
             error = f"Invalid action: {decision}. Allowed: {allowed}"
 
-        step_val = state.state_step
-        self.log_step(step_val, decision, res, t_end - t_start, error)
+        step_val = state.get("state_step", 0) if isinstance(state, dict) else state.state_step
+        self.log_step(step_val, decision, res, t_end - t_start, error, task_id=task_id)
         return decision
 
     def log_step(
@@ -68,15 +69,17 @@ class FDMOrchestrator(BaseOrchestrator):
         state_res: SystemOneResponse,
         duration: float,
         error: str | None,
+        task_id: str | None = None,
     ) -> None:
         ans = state_res.answers["next_subagent"]
         confidence = ans.confidence
         probabilities = ans.probabilities
 
-        tokens_in = state_res.usage.input_tokens
-        tokens_out = state_res.usage.output_tokens
+        fdm_tkns_in = state_res.usage.input_tokens
+        fdm_tkns_out = state_res.usage.output_tokens
 
         log = {
+            "task_id": task_id,
             "node": "orchestrator",
             "subagent_steps": None,
             "state_step": state_step,
@@ -84,8 +87,10 @@ class FDMOrchestrator(BaseOrchestrator):
             "confidence": confidence,
             "probabilities": probabilities,
             "compute_time_seconds": duration,
-            "tokens_input": tokens_in,
-            "tokens_output": tokens_out,
+            "llm_tkns_in": 0,
+            "llm_tkns_out": 0,
+            "fdm_tkns_in": fdm_tkns_in,
+            "fdm_tkns_out": fdm_tkns_out,
             "response": decision,
             "error": error,
         }

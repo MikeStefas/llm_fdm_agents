@@ -1,8 +1,3 @@
-"""Centralized prompts and prompt templates for orchestrators, subagents, and finalizer."""
-
-# ==============================================================================
-# Finalizer Prompts
-# ==============================================================================
 
 GAIA_FINALIZER_PROMPT = """You are the finalizer agent in a GAIA benchmark evaluation.
 Given the task and the intermediate steps/results from the subagents, synthesize the findings and output ONLY the final answer to the user's question.
@@ -21,17 +16,9 @@ FINALIZER_OPTION_DESCRIPTION = (
 )
 
 
-# ==============================================================================
-# Orchestrator Decision Field Descriptions
-# ==============================================================================
-
 NEXT_SUBAGENT_FIELD_DESCRIPTION = "The name of the next subagent to act, or 'finalizer'"
 SUBAGENT_PROMPT_FIELD_DESCRIPTION = "The instructions or prompt for the chosen subagent to execute"
 
-
-# ==============================================================================
-# Single Orchestrator Prompts
-# ==============================================================================
 
 LLM_ORCHESTRATOR_SYSTEM_PROMPT = """You are the orchestrator of a team of subagents.
 Given the task state, decide which subagent should act next.
@@ -46,10 +33,6 @@ FDM_ORCHESTRATOR_INSTRUCTIONS = (
     "Given the task state, decide which subagent should act next, or choose 'finalizer' if the task is complete."
 )
 
-
-# ==============================================================================
-# Dual Orchestrator Prompts (Routed + Prompted)
-# ==============================================================================
 
 LLM_ROUTED_LLM_PROMPTED_SYSTEM_PROMPT = """You are the orchestrator of a team of subagents.
 Given the task state, decide which subagent should act next (or choose 'finalizer' if the task is complete) and write a clear, concise instruction/prompt for it.
@@ -67,9 +50,6 @@ The option '{chosen_agent}' ({agent_desc}) has been selected to act next.
 Write a clear, concise instruction/prompt for '{chosen_agent}' based on the task state."""
 
 
-# ==============================================================================
-# ReAct Agent Prompts
-# ==============================================================================
 
 FDM_REACT_INSTRUCTIONS_TEMPLATE = (
     "You are a react agent. Given the state of the task, decide the next action. "

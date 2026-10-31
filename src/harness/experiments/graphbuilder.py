@@ -24,9 +24,10 @@ class State(BaseModel):
     state_step: int = 0
     next_subagent: Optional[str] = None
     subagent_prompt: Optional[str] = None
+    task_id: Optional[str] = None
 
 
-class MultiAgentSystem():
+class MultiAgentSystem:
     def __init__(
         self,
         orchestrator: BaseOrchestrator,
@@ -35,7 +36,9 @@ class MultiAgentSystem():
     ):
         self.orchestrator = orchestrator
         self.subagents = orchestrator.get_subagents()
-        self.finalizer_node = finalizer_node if finalizer_node is not None else FinalizerNode(log_path=log_path)
+        self.finalizer_node = (
+            finalizer_node if finalizer_node is not None else FinalizerNode(log_path=log_path)
+        )
         self.builder = StateGraph(State)
         self.log_path = log_path
 
@@ -46,7 +49,7 @@ class MultiAgentSystem():
         self._add_edges()
         self._set_log_path()
         return self.builder.compile()
-    
+
     def _create_orchestrator_node(self):
         def orchestrator_node(state: State) -> dict:
             decision = self.orchestrator(state)
@@ -55,10 +58,12 @@ class MultiAgentSystem():
                     "next_subagent": str(decision["next_subagent"]).strip(),
                     "subagent_prompt": str(decision["subagent_prompt"]),
                     "state_step": state.state_step + 1,
+                    "task_id": state.task_id,
                 }
             return {
                 "next_subagent": str(decision).strip(),
                 "state_step": state.state_step + 1,
+                "task_id": state.task_id,
             }
 
         self.builder.add_node("orchestrator", orchestrator_node)
@@ -69,8 +74,13 @@ class MultiAgentSystem():
             messages = list(state.messages)
             if state.subagent_prompt:
                 messages.append(HumanMessage(content=state.subagent_prompt))
-            res = subagent(messages, state_step=state.state_step)
-            return {"messages": [AIMessage(content=res, name=name)], "subagent_prompt": None}
+            res = subagent(messages, state_step=state.state_step, task_id=state.task_id)
+            return {
+                "messages": [AIMessage(content=res, name=name)],
+                "subagent_prompt": None,
+                "task_id": state.task_id,
+            }
+
         return subagent_node
 
     def _create_all_subagent_nodes(self):
@@ -80,8 +90,15 @@ class MultiAgentSystem():
 
     def _create_finalizer_node(self):
         def finalizer_node(state: State) -> dict:
-            output_text = self.finalizer_node(state.messages, state_step=state.state_step)
-            return {"messages": [AIMessage(content=output_text, name="finalizer")]}
+            output_text = self.finalizer_node(
+                state.messages,
+                state_step=state.state_step,
+                task_id=state.task_id,
+            )
+            return {
+                "messages": [AIMessage(content=output_text, name="finalizer")],
+                "task_id": state.task_id,
+            }
 
         self.builder.add_node("finalizer", finalizer_node)
         return finalizer_node
@@ -89,19 +106,25 @@ class MultiAgentSystem():
     def log_finalizer_step(
         self,
         state_step: int,
-        tokens_in: int,
-        tokens_out: int,
+        llm_tkns_in: int,
+        llm_tkns_out: int,
+        fdm_tkns_in: int,
+        fdm_tkns_out: int,
         duration: float,
         final_response: str | None = None,
         error: str | None = None,
+        task_id: Optional[str] = None,
     ) -> None:
         self.finalizer_node.log_step(
             state_step=state_step,
-            tokens_in=tokens_in,
-            tokens_out=tokens_out,
+            llm_tkns_in=llm_tkns_in,
+            llm_tkns_out=llm_tkns_out,
+            fdm_tkns_in=fdm_tkns_in,
+            fdm_tkns_out=fdm_tkns_out,
             duration=duration,
             response=final_response,
             error=error,
+            task_id=task_id,
         )
 
     def _add_edges(self):
@@ -123,8 +146,6 @@ class MultiAgentSystem():
             },
         )
 
-
-
     @staticmethod
     def _routing_condition(state: State) -> str:
         if state.next_subagent == "web_search":
@@ -139,7 +160,7 @@ class MultiAgentSystem():
             return "code_interpreter"
 
         return "finalizer"
-    
+
     def _set_log_path(self):
         for subagent in self.subagents:
             subagent.set_log_path(self.log_path)

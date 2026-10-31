@@ -4,13 +4,16 @@ import os
 from typing import Any
 
 LOG_FIELDNAMES = [
+    "task_id",
     "node",
     "subagent_steps",
     "state_step",
     "reasoning",
     "compute_time_seconds",
-    "tokens_input",
-    "tokens_output",
+    "llm_tkns_in",
+    "llm_tkns_out",
+    "fdm_tkns_in",
+    "fdm_tkns_out",
     "response",
     "error",
 ]
