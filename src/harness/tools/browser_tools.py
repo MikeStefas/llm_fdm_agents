@@ -1,11 +1,7 @@
 
-import warnings
-
-
 from langchain_community.agent_toolkits.playwright.toolkit import PlayWrightBrowserToolkit
 from langchain_community.tools.playwright.utils import (
     create_async_playwright_browser,
-    create_sync_playwright_browser,
 )
 
 

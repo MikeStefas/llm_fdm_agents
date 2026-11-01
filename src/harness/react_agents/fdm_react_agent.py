@@ -1,14 +1,13 @@
 import json
 import time
-from typing import cast
+from typing import Optional, cast
 from typing_extensions import override
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
-from typesafe_sdk import TypeSafeClient, Choice, ChoiceAnswer, SystemOneResponse
+from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
 
 from harness.react_agents.base import BaseReactAgent
-from harness.utils import append_to_csv, get_chat_model
 from harness.utils.prompts import (
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,
@@ -17,8 +16,6 @@ from harness.utils.prompts import (
 
 
 class FDMReactAgent(BaseReactAgent):
-    base_url: str
-    reasoning: bool
     criteria: dict[str, str]
     fdm_client: TypeSafeClient
     llm_client: ChatOpenAI
@@ -26,72 +23,109 @@ class FDMReactAgent(BaseReactAgent):
     def __init__(
         self,
         subagent_name: str,
-        subagent_model: str,
         tools: list[Tool],
         description: str,
-        log_path: str = "subagents.csv",
-        base_url: str = "http://localhost:9931",
-        reasoning: bool = False,
+        fdm_client: TypeSafeClient,
+        llm_client: ChatOpenAI,
+        log_path: Optional[str] = None,
         max_iter: int = 10,
+  
     ) -> None:
-        super().__init__(subagent_name, subagent_model, tools, description, log_path, max_iter)
+        super().__init__(subagent_name, tools, description, log_path=log_path, max_iter=max_iter)
 
-        self.base_url = base_url
-        self.reasoning = reasoning
         self.criteria = self._get_criteria()
-        self.fdm_client = TypeSafeClient(
-            base_url=self.base_url,
-            api_key="local",
-        )
-        self.llm_client = get_chat_model(
-            reasoning=self.reasoning,
-        )
+        self.fdm_client = fdm_client
+        self.llm_client = llm_client
+
 
     @override
     def react(self, state: list[BaseMessage], state_step: int = 0, task_id: str | None = None) -> str:
-        t_start = time.perf_counter()
-        llm_tkns_in = 0
-        llm_tkns_out = 0
-        fdm_tkns_in = 0
-        fdm_tkns_out = 0
-        last_error = None
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before running react agent.")
         substep_count = 0
         final_res = None
         messages = list(state)
+        t_substep_start = time.perf_counter()
 
         try:
             for i in range(self.max_iter):
                 substep_count = i + 1
+                t_substep_start = time.perf_counter()
+                substep_error = None
+                step_fdm_in = 0
+                step_fdm_out = 0
+                step_llm_in = 0
+                step_llm_out = 0
 
                 # fdm decides next action and calc usage
                 action, res = self._route(messages)
-                fdm_tkns_in += res.usage.input_tokens 
-                fdm_tkns_out += res.usage.output_tokens 
+                if res.usage is not None:
+                    step_fdm_in += res.usage.input_tokens
+                    step_fdm_out += res.usage.output_tokens
 
                 # If finish action, generate final response directly
                 if action == "Finish":
                     final_res = self.llm_client.invoke(messages)
-                    usage = final_res.usage_metadata 
-                    llm_tkns_in += usage["input_tokens"]
-                    llm_tkns_out += usage["output_tokens"]
+                    usage = getattr(final_res, "usage_metadata", None) or {}
+                    step_llm_in += usage.get("input_tokens", 0)
+                    step_llm_out += usage.get("output_tokens", 0)
+                    duration = time.perf_counter() - t_substep_start
+                    self.log_step(
+                        substep_count=substep_count,
+                        llm_tkns_in=step_llm_in,
+                        llm_tkns_out=step_llm_out,
+                        fdm_tkns_in=step_fdm_in,
+                        fdm_tkns_out=step_fdm_out,
+                        duration=duration,
+                        final_response=str(final_res.content),
+                        error=None,
+                        state_step=state_step,
+                        task_id=task_id,
+                    )
                     break
 
                 if action not in self.tools_by_name:
-                    last_error = f"Tool Error: Tool '{action}' not found."
-                    messages.append(ToolMessage(content=last_error, tool_call_id=action))
+                    substep_error = f"Tool Error: Tool '{action}' not found."
+                    messages.append(ToolMessage(content=substep_error, tool_call_id=action))
+                    duration = time.perf_counter() - t_substep_start
+                    self.log_step(
+                        substep_count=substep_count,
+                        llm_tkns_in=step_llm_in,
+                        llm_tkns_out=step_llm_out,
+                        fdm_tkns_in=step_fdm_in,
+                        fdm_tkns_out=step_fdm_out,
+                        duration=duration,
+                        final_response=f"Action: {action}",
+                        error=substep_error,
+                        state_step=state_step,
+                        task_id=task_id,
+                    )
                     continue
 
                 tool = self.tools_by_name[action]
 
                 # llm generates arguments for tool call and calc usage
                 arg_res = self._generate_args(messages, action)
-                usage = arg_res.usage_metadata 
-                llm_tkns_in += usage["input_tokens"]
-                llm_tkns_out += usage["output_tokens"]
+                usage = getattr(arg_res, "usage_metadata", None) or {}
+                step_llm_in += usage.get("input_tokens", 0)
+                step_llm_out += usage.get("output_tokens", 0)
 
                 # If no tool calls, this is the final natural response directly
                 if not arg_res.tool_calls:
                     final_res = arg_res
+                    duration = time.perf_counter() - t_substep_start
+                    self.log_step(
+                        substep_count=substep_count,
+                        llm_tkns_in=step_llm_in,
+                        llm_tkns_out=step_llm_out,
+                        fdm_tkns_in=step_fdm_in,
+                        fdm_tkns_out=step_fdm_out,
+                        duration=duration,
+                        final_response=str(final_res.content),
+                        error=None,
+                        state_step=state_step,
+                        task_id=task_id,
+                    )
                     break
 
                 messages.append(arg_res)
@@ -102,8 +136,8 @@ class FDMReactAgent(BaseReactAgent):
                     tool_call_id = str(tool_call["id"])
 
                     if name not in self.tools_by_name:
-                        last_error = f"Tool Error: Tool '{name}' not found."
-                        messages.append(ToolMessage(content=last_error, tool_call_id=tool_call_id))
+                        substep_error = f"Tool Error: Tool '{name}' not found."
+                        messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
                         continue
 
                     tool = self.tools_by_name[name]
@@ -112,11 +146,28 @@ class FDMReactAgent(BaseReactAgent):
                         observation = tool.invoke(tool_call["args"])
                         messages.append(ToolMessage(content=str(observation), tool_call_id=tool_call_id))
                     except Exception as e:
-                        last_error = f"Tool Error ({name}): {str(e)}"
-                        messages.append(ToolMessage(content=last_error, tool_call_id=tool_call_id))
+                        substep_error = f"Tool Error ({name}): {str(e)}"
+                        messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
+
+                duration = time.perf_counter() - t_substep_start
+                step_response = arg_res.content if arg_res.content else json.dumps(arg_res.tool_calls)
+                self.log_step(
+                    substep_count=substep_count,
+                    llm_tkns_in=step_llm_in,
+                    llm_tkns_out=step_llm_out,
+                    fdm_tkns_in=step_fdm_in,
+                    fdm_tkns_out=step_fdm_out,
+                    duration=duration,
+                    final_response=step_response,
+                    error=substep_error,
+                    state_step=state_step,
+                    task_id=task_id,
+                )
 
             # If max_iter was reached without a natural language conclusion:
             if final_res is None:
+                substep_count += 1
+                t_substep_start = time.perf_counter()
                 messages.append(
                     HumanMessage(
                         content="You have reached the maximum number of tool iterations. "
@@ -125,69 +176,39 @@ class FDMReactAgent(BaseReactAgent):
                     )
                 )
                 final_res = self.llm_client.invoke(messages)
-                usage = final_res.usage_metadata
-                llm_tkns_in += usage["input_tokens"]
-                llm_tkns_out += usage["output_tokens"]
+                usage = getattr(final_res, "usage_metadata", None) or {}
+                step_llm_in = usage.get("input_tokens", 0)
+                step_llm_out = usage.get("output_tokens", 0)
+                duration = time.perf_counter() - t_substep_start
+                output_text = str(final_res.content)
+                self.log_step(
+                    substep_count=substep_count,
+                    llm_tkns_in=step_llm_in,
+                    llm_tkns_out=step_llm_out,
+                    fdm_tkns_in=0,
+                    fdm_tkns_out=0,
+                    duration=duration,
+                    final_response=output_text,
+                    error=None,
+                    state_step=state_step,
+                    task_id=task_id,
+                )
+                return output_text
 
-            output_text = str(final_res.content)
-            duration = time.perf_counter() - t_start
-            self.log_step(
-                substep_count,
-                llm_tkns_in,
-                llm_tkns_out,
-                fdm_tkns_in,
-                fdm_tkns_out,
-                duration,
-                output_text,
-                last_error,
-                state_step=state_step,
-                task_id=task_id,
-            )
-            return output_text
+            return str(final_res.content)
         except Exception as e:
             self.log_step(
-                substep_count,
-                llm_tkns_in,
-                llm_tkns_out,
-                fdm_tkns_in,
-                fdm_tkns_out,
-                time.perf_counter() - t_start,
+                substep_count=substep_count,
+                llm_tkns_in=0,
+                llm_tkns_out=0,
+                fdm_tkns_in=0,
+                fdm_tkns_out=0,
+                duration=time.perf_counter() - t_substep_start,
                 error=str(e),
                 state_step=state_step,
                 task_id=task_id,
             )
             raise
-
-    @override
-    def log_step(
-        self,
-        substep_count: int,
-        llm_tkns_in: int,
-        llm_tkns_out: int,
-        fdm_tkns_in: int,
-        fdm_tkns_out: int,
-        duration: float,
-        final_response: str | None = None,
-        error: str | None = None,
-        state_step: int = 0,
-        task_id: str | None = None,
-    ) -> None:
-        log = {
-            "task_id": task_id,
-            "node": self.subagent_name,
-            "subagent_steps": substep_count,
-            "state_step": state_step,
-            "reasoning": self.reasoning,
-            "compute_time_seconds": duration,
-            "llm_tkns_in": llm_tkns_in,
-            "llm_tkns_out": llm_tkns_out,
-            "fdm_tkns_in": fdm_tkns_in,
-            "fdm_tkns_out": fdm_tkns_out,
-            "response": final_response,
-            "error": error,
-        }
-        print(log)
-        append_to_csv(self.log_path, log)
 
     def _route(self, state: list[BaseMessage]) -> tuple[str, SystemOneResponse]:
         """FDM decides next tool call """

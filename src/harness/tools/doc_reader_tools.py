@@ -1,9 +1,7 @@
 """Document reading and extraction tools."""
 
 import os
-import tempfile
 import warnings
-import zipfile
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -13,9 +11,8 @@ from langchain_community.tools.file_management import (
     ReadFileTool,
 )
 from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
 from markitdown import MarkItDown
-
-from harness.utils.llm import get_chat_model
 
 _markitdown_converter = MarkItDown()
 
@@ -35,12 +32,22 @@ def convert_file_to_markdown_and_read(path: str, task: str) -> str:
     """
     if not os.path.exists(path):
         return f"Error: File '{path}' not found."
+    _, ext = os.path.splitext(path.lower())
+    if ext in (".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".mp3", ".wav", ".m4a", ".ogg"):
+        return (
+            f"Error: '{path}' is a multimedia file ({ext}). It cannot be parsed by doc_reader. "
+        )
     try:
         result = _markitdown_converter.convert(path)
         content = result.text_content or ""
         content = content[:12000] if len(content) > 12000 else content
 
-        llm = get_chat_model()
+        llm = ChatOpenAI(
+            model="qwen/qwen3.5-9b",
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            temperature=0.0,
+        )
         llm_res = llm.invoke(f"{task}\n\n{content}")
         return str(llm_res.content)
     except Exception as e:

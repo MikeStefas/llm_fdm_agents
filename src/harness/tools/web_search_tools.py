@@ -4,9 +4,9 @@ import os
 import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 from bs4 import BeautifulSoup
-from langchain_community.tools.brave_search.tool import BraveSearch
 from langchain_community.tools.ddg_search.tool import (
     DuckDuckGoSearchResults,
     DuckDuckGoSearchRun,
@@ -19,9 +19,10 @@ import wikipedia
 
 wikipedia.set_user_agent("GAIABenchmarkBot/1.0 (mike.research@gmail.com)")
 
-duckduckgo_search_run = DuckDuckGoSearchRun()
-duckduckgo_search_results = DuckDuckGoSearchResults()
 
+ddg_api_wrapper = DuckDuckGoSearchAPIWrapper(region="us-en")
+duckduckgo_search_run = DuckDuckGoSearchRun(api_wrapper=ddg_api_wrapper)
+duckduckgo_search_results = DuckDuckGoSearchResults(api_wrapper=ddg_api_wrapper)
 wikipedia_tool = WikipediaQueryRun(
     api_wrapper=WikipediaAPIWrapper(top_k_results=2, doc_content_chars_max=4000)
 )

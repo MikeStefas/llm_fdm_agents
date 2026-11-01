@@ -1,22 +1,12 @@
-import json
 from typing import Annotated, Optional
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
-from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
 
-from harness.experiments.initialised_orchs import LLM_MODEL, llm_orchestrator
-from harness.experiments.initialised_subagents import (
-    llm_browser_subagent,
-    llm_code_interpreter_subagent,
-    llm_doc_reader_subagent,
-    llm_media_reader_subagent,
-    llm_web_search_subagent,
-)
+from harness.mas_builder.finalizer import FinalizerNode
 from harness.orchestrators.base import BaseOrchestrator
-from harness.utils import FinalizerNode
 
 
 class State(BaseModel):
@@ -32,22 +22,21 @@ class MultiAgentSystem:
         self,
         orchestrator: BaseOrchestrator,
         log_path: str,
-        finalizer_node: Optional[FinalizerNode] = None,
     ):
         self.orchestrator = orchestrator
         self.subagents = orchestrator.get_subagents()
-        self.finalizer_node = (
-            finalizer_node if finalizer_node is not None else FinalizerNode(log_path=log_path)
-        )
+        self.finalizer = FinalizerNode(log_path=log_path, llm_client=getattr(orchestrator, "llm_client", None))
+
         self.builder = StateGraph(State)
         self.log_path = log_path
+        self.set_log_path()
 
     def build_graph(self):
         self._create_orchestrator_node()
         self._create_all_subagent_nodes()
         self._create_finalizer_node()
         self._add_edges()
-        self._set_log_path()
+        self.set_log_path()
         return self.builder.compile()
 
     def _create_orchestrator_node(self):
@@ -90,7 +79,7 @@ class MultiAgentSystem:
 
     def _create_finalizer_node(self):
         def finalizer_node(state: State) -> dict:
-            output_text = self.finalizer_node(
+            output_text = self.finalizer(
                 state.messages,
                 state_step=state.state_step,
                 task_id=state.task_id,
@@ -103,66 +92,35 @@ class MultiAgentSystem:
         self.builder.add_node("finalizer", finalizer_node)
         return finalizer_node
 
-    def log_finalizer_step(
-        self,
-        state_step: int,
-        llm_tkns_in: int,
-        llm_tkns_out: int,
-        fdm_tkns_in: int,
-        fdm_tkns_out: int,
-        duration: float,
-        final_response: str | None = None,
-        error: str | None = None,
-        task_id: Optional[str] = None,
-    ) -> None:
-        self.finalizer_node.log_step(
-            state_step=state_step,
-            llm_tkns_in=llm_tkns_in,
-            llm_tkns_out=llm_tkns_out,
-            fdm_tkns_in=fdm_tkns_in,
-            fdm_tkns_out=fdm_tkns_out,
-            duration=duration,
-            response=final_response,
-            error=error,
-            task_id=task_id,
-        )
-
     def _add_edges(self):
         self.builder.add_edge(START, "orchestrator")
         for subagent in self.subagents:
             name = subagent.subagent_name
             self.builder.add_edge(name, "orchestrator")
         self.builder.add_edge("finalizer", END)
+
+        routing_destinations = {}
+        for subagent in self.subagents:
+            name = subagent.subagent_name
+            routing_destinations[name] = name
+        routing_destinations["finalizer"] = "finalizer"
+
         self.builder.add_conditional_edges(
             "orchestrator",
             self._routing_condition,
-            {
-                "web_search": "web_search",
-                "browser": "browser",
-                "doc_reader": "doc_reader",
-                "media_reader": "media_reader",
-                "code_interpreter": "code_interpreter",
-                "finalizer": "finalizer",
-            },
+            routing_destinations,
         )
 
-    @staticmethod
-    def _routing_condition(state: State) -> str:
-        if state.next_subagent == "web_search":
-            return "web_search"
-        if state.next_subagent == "browser":
-            return "browser"
-        if state.next_subagent == "doc_reader":
-            return "doc_reader"
-        if state.next_subagent == "media_reader":
-            return "media_reader"
-        if state.next_subagent == "code_interpreter":
-            return "code_interpreter"
-
+    def _routing_condition(self, state: State) -> str:
+        for subagent in self.subagents:
+            if state.next_subagent == subagent.subagent_name:
+                return subagent.subagent_name
         return "finalizer"
 
-    def _set_log_path(self):
+    def set_log_path(self, new_log_path: Optional[str] = None):
+        if new_log_path:
+            self.log_path = new_log_path
         for subagent in self.subagents:
             subagent.set_log_path(self.log_path)
         self.orchestrator.set_log_path(self.log_path)
-        self.finalizer_node.set_log_path(self.log_path)
+        self.finalizer.set_log_path(self.log_path)

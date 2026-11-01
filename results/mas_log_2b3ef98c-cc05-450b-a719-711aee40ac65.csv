@@ -1,0 +1,11 @@
+task_id,node,subagent_steps,state_step,reasoning,compute_time_seconds,llm_tkns_in,llm_tkns_out,fdm_tkns_in,fdm_tkns_out,response,error
+2b3ef98c-cc05-450b-a719-711aee40ac65,orchestrator,,0,False,0.41166452699690126,400,3,0,0,media_reader,
+2b3ef98c-cc05-450b-a719-711aee40ac65,media_reader,1,1,False,7.102055974995892,787,64,0,0,"[{""name"": ""transcribe_audio"", ""args"": {""path"": ""data/gaia/2b3ef98c-cc05-450b-a719-711aee40ac65.mp3""}, ""id"": ""call_2fcb6ea36e2e41a390ee852163eef8f6"", ""type"": ""tool_call""}]",
+2b3ef98c-cc05-450b-a719-711aee40ac65,media_reader,2,1,False,0.7024831019953126,970,7,0,0,To be or not to be,
+2b3ef98c-cc05-450b-a719-711aee40ac65,orchestrator,,1,False,1.2050062480047927,411,3,0,0,finalizer,
+2b3ef98c-cc05-450b-a719-711aee40ac65,finalizer,,2,False,1.1059370700022555,319,7,0,0,tobeenorotobe,
+2b3ef98c-cc05-450b-a719-711aee40ac65,orchestrator,,0,,0.6860780260030879,456,3,0,0,media_reader,
+2b3ef98c-cc05-450b-a719-711aee40ac65,media_reader,1,1,,9.60211505600455,900,64,0,0,"[{""name"": ""transcribe_audio"", ""args"": {""path"": ""data/gaia/2b3ef98c-cc05-450b-a719-711aee40ac65.mp3""}, ""id"": ""call_b9d4fa08f0c74854ae6cfa1241d73f27"", ""type"": ""tool_call""}]",
+2b3ef98c-cc05-450b-a719-711aee40ac65,media_reader,2,1,,1.3425496839990956,1083,9,0,0,hamletqueriesonhowliferot,
+2b3ef98c-cc05-450b-a719-711aee40ac65,orchestrator,,1,,0.38546524500270607,469,3,0,0,finalizer,
+2b3ef98c-cc05-450b-a719-711aee40ac65,finalizer,,2,False,0.43950678200053517,,,0,0,hamletqueriesonhowliferot,

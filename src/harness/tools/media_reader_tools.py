@@ -2,22 +2,15 @@
 
 import base64
 from io import BytesIO
-import io
 import os
-import subprocess
-import tempfile
-import warnings
 
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
 import numpy as np
 from PIL import Image
 import pydub
-from pytesseract import image_to_string
-import torch
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
-
-from harness.utils.llm import get_chat_model
 
 
 def convert_to_base64(file_path: str) -> str:
@@ -48,7 +41,13 @@ def ocr_image(
         return f"Error: Image '{path}' not found."
     try:
         img_base64 = convert_to_base64(path)
-        llm = get_chat_model(reasoning=False)
+        llm = ChatOpenAI(
+            model=model_name or "qwen/qwen3.5-9b",
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            temperature=0.0,
+            reasoning_effort="none",
+        )
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},
@@ -76,7 +75,13 @@ def inspect_image(
         return f"Error: Image '{path}' not found."
     try:
         img_base64 = convert_to_base64(path)
-        llm = get_chat_model(reasoning=False)
+        llm = ChatOpenAI(
+            model="qwen/qwen3.5-9b",
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            temperature=0.0,
+            reasoning_effort="none",
+        )
         message = HumanMessage(
             content=[
                 {"type": "text", "text": prompt},

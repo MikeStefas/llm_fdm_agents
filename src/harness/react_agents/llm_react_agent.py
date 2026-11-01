@@ -1,61 +1,79 @@
 import json
 import time
-from typing import cast
+from typing import Optional
 from typing_extensions import override
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import Runnable
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 
 from harness.react_agents.base import BaseReactAgent
-from harness.utils import append_to_csv, get_chat_model
 
 
 class LLMReactAgent(BaseReactAgent):
-    reasoning: bool
     llm_client: ChatOpenAI
     bound_llm: Runnable[object, object]
 
     def __init__(
         self,
         subagent_name: str,
-        subagent_model: str,
         tools: list[Tool],
         description: str,
-        log_path: str = "subagents.csv",
-        reasoning: bool = False,
+        llm_client: ChatOpenAI,
+        log_path: Optional[str] = None,
         max_iter: int = 10,
     ) -> None:
-        super().__init__(subagent_name, subagent_model, tools, description, log_path, max_iter)
+        super().__init__(subagent_name, tools, description, log_path=log_path, max_iter=max_iter)
 
-        self.reasoning = reasoning
-        self.llm_client = get_chat_model(
-            reasoning=self.reasoning,
-        )
-        self.bound_llm = cast(Runnable[object, object], self.llm_client.bind_tools(self.tools))
+        self.llm_client = llm_client
+        self.bound_llm = self.llm_client.bind_tools(self.tools)
+
 
     @override
     def react(self, state: list[BaseMessage], state_step: int = 0, task_id: str | None = None) -> str:
-        t_start = time.perf_counter()
-        llm_tkns_in = 0
-        llm_tkns_out = 0
-        last_error = None
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before running react agent.")
         substep_count = 0
         final_res = None
+        system_instruction = (
+            f"You are the '{self.subagent_name}' agent in a multi-agent system.\n"
+            f"Your role & capabilities: {self.description}\n"
+            "Use your tools to execute actions and extract information. "
+            "When reporting findings, always include full verbatim transcriptions, exact numbers, and detailed text from your tool observations so the orchestrator and subsequent agents have complete information."
+        )
         messages = list(state)
+        if not messages or not isinstance(messages[0], SystemMessage):
+            messages = [SystemMessage(content=system_instruction)] + messages
+        t_substep_start = time.perf_counter()
 
         try:
             for i in range(self.max_iter):
                 substep_count = i + 1
+                t_substep_start = time.perf_counter()
+                substep_error = None
+
                 # llm decides next action and args
                 res = self.bound_llm.invoke(messages)
-                usage = res.usage_metadata
-                llm_tkns_in += usage["input_tokens"]
-                llm_tkns_out += usage["output_tokens"]
+                usage = getattr(res, "usage_metadata", None) or {}
+                step_tkns_in = usage.get("input_tokens", 0)
+                step_tkns_out = usage.get("output_tokens", 0)
 
                 # If no tool calls, this is the final natural response directly
                 if not res.tool_calls:
                     final_res = res
+                    duration = time.perf_counter() - t_substep_start
+                    self.log_step(
+                        substep_count=substep_count,
+                        llm_tkns_in=step_tkns_in,
+                        llm_tkns_out=step_tkns_out,
+                        fdm_tkns_in=0,
+                        fdm_tkns_out=0,
+                        duration=duration,
+                        final_response=str(res.content),
+                        error=None,
+                        state_step=state_step,
+                        task_id=task_id,
+                    )
                     break
 
                 messages.append(res)
@@ -66,8 +84,8 @@ class LLMReactAgent(BaseReactAgent):
                     tool_call_id = str(tool_call["id"])
 
                     if name not in self.tools_by_name:
-                        last_error = f"Tool Error: Tool '{name}' not found."
-                        messages.append(ToolMessage(content=last_error, tool_call_id=tool_call_id))
+                        substep_error = f"Tool Error: Tool '{name}' not found."
+                        messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
                         continue
 
                     tool = self.tools_by_name[name]
@@ -76,11 +94,28 @@ class LLMReactAgent(BaseReactAgent):
                         observation = tool.invoke(tool_call["args"])
                         messages.append(ToolMessage(content=str(observation), tool_call_id=tool_call_id))
                     except Exception as e:
-                        last_error = f"Tool Error ({name}): {str(e)}"
-                        messages.append(ToolMessage(content=last_error, tool_call_id=tool_call_id))
+                        substep_error = f"Tool Error ({name}): {str(e)}"
+                        messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
+
+                duration = time.perf_counter() - t_substep_start
+                step_response = res.content if res.content else json.dumps(res.tool_calls)
+                self.log_step(
+                    substep_count=substep_count,
+                    llm_tkns_in=step_tkns_in,
+                    llm_tkns_out=step_tkns_out,
+                    fdm_tkns_in=0,
+                    fdm_tkns_out=0,
+                    duration=duration,
+                    final_response=step_response,
+                    error=substep_error,
+                    state_step=state_step,
+                    task_id=task_id,
+                )
 
             # If max_iter was reached without a natural language conclusion:
             if final_res is None:
+                substep_count += 1
+                t_substep_start = time.perf_counter()
                 messages.append(
                     HumanMessage(
                         content="You have reached the maximum number of tool iterations. "
@@ -89,66 +124,36 @@ class LLMReactAgent(BaseReactAgent):
                     )
                 )
                 final_res = self.llm_client.invoke(messages)
-                usage = final_res.usage_metadata
-                llm_tkns_in += usage["input_tokens"]
-                llm_tkns_out += usage["output_tokens"]
+                usage = getattr(final_res, "usage_metadata", None) or {}
+                step_tkns_in = usage.get("input_tokens", 0)
+                step_tkns_out = usage.get("output_tokens", 0)
+                duration = time.perf_counter() - t_substep_start
+                output_text = str(final_res.content)
+                self.log_step(
+                    substep_count=substep_count,
+                    llm_tkns_in=step_tkns_in,
+                    llm_tkns_out=step_tkns_out,
+                    fdm_tkns_in=0,
+                    fdm_tkns_out=0,
+                    duration=duration,
+                    final_response=output_text,
+                    error=None,
+                    state_step=state_step,
+                    task_id=task_id,
+                )
+                return output_text
 
-            output_text = str(final_res.content)
-            duration = time.perf_counter() - t_start
-            self.log_step(
-                substep_count,
-                llm_tkns_in,
-                llm_tkns_out,
-                0,
-                0,
-                duration,
-                output_text,
-                last_error,
-                state_step=state_step,
-                task_id=task_id,
-            )
-            return output_text
+            return str(final_res.content)
         except Exception as e:
             self.log_step(
-                substep_count,
-                llm_tkns_in,
-                llm_tkns_out,
-                0,
-                0,
-                time.perf_counter() - t_start,
+                substep_count=substep_count,
+                llm_tkns_in=0,
+                llm_tkns_out=0,
+                fdm_tkns_in=0,
+                fdm_tkns_out=0,
+                duration=time.perf_counter() - t_substep_start,
                 error=str(e),
                 state_step=state_step,
                 task_id=task_id,
             )
             raise
-
-    @override
-    def log_step(
-        self,
-        substep_count: int,
-        llm_tkns_in: int,
-        llm_tkns_out: int,
-        fdm_tkns_in: int,
-        fdm_tkns_out: int,
-        duration: float,
-        final_response: str | None = None,
-        error: str | None = None,
-        state_step: int = 0,
-        task_id: str | None = None,
-    ) -> None:
-        log = {
-            "task_id": task_id,
-            "node": self.subagent_name,
-            "subagent_steps": substep_count,
-            "state_step": state_step,
-            "reasoning": self.reasoning,
-            "compute_time_seconds": duration,
-            "llm_tkns_in": llm_tkns_in,
-            "llm_tkns_out": llm_tkns_out,
-            "fdm_tkns_in": 0,
-            "fdm_tkns_out": 0,
-            "response": final_response,
-            "error": error,
-        }
-        print(log)
-        append_to_csv(self.log_path, log)

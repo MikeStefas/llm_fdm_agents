@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
+from typing import Optional
+from langchain_core.messages import BaseMessage
 from langchain_core.tools import Tool
+from harness.utils.prompts import state_to_text
+from harness.utils import append_to_csv
 
 
 class BaseReactAgent(ABC):
     subagent_name: str
-    subagent_model: str
-    log_path: str
+    reasoning: bool = False
+    log_path: Optional[str]
     tools: list[Tool]
     tools_by_name: dict[str, Tool]
     description: str
@@ -15,14 +18,12 @@ class BaseReactAgent(ABC):
     def __init__(
         self,
         subagent_name: str,
-        subagent_model: str,
         tools: list[Tool],
         description: str,
-        log_path: str ,
+        log_path: Optional[str] = None,
         max_iter: int = 10,
     ) -> None:
         self.subagent_name = subagent_name
-        self.subagent_model = subagent_model
         self.tools = tools
         self.tools_by_name = {tool.name: tool for tool in tools}
         self.description = description
@@ -37,17 +38,12 @@ class BaseReactAgent(ABC):
 
     @staticmethod
     def state_to_text(state: list[BaseMessage]) -> str:
-        lines: list[str] = []
-        for m in state:
-            role = m.name if m.name else m.type
-            lines.append(f"[{role}]: {m.content}")
-        return "\n".join(lines)
+        return state_to_text(state)
 
     @abstractmethod
     def react(self, state: list[BaseMessage], state_step: int = 0, task_id: str | None = None) -> str:
         pass
 
-    @abstractmethod
     def log_step(
         self,
         substep_count: int,
@@ -61,7 +57,25 @@ class BaseReactAgent(ABC):
         state_step: int = 0,
         task_id: str | None = None,
     ) -> None:
-        pass
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before logging.")
+
+        log = {
+            "task_id": task_id,
+            "node": self.subagent_name,
+            "subagent_steps": substep_count,
+            "state_step": state_step,
+            "compute_time_seconds": duration,
+            "llm_tkns_in": llm_tkns_in,
+            "llm_tkns_out": llm_tkns_out,
+            "fdm_tkns_in": fdm_tkns_in,
+            "fdm_tkns_out": fdm_tkns_out,
+            "response": final_response,
+            "error": error,
+        }
+        append_to_csv(self.log_path, log)
 
     def __call__(self, state: list[BaseMessage], state_step: int = 0, task_id: str | None = None) -> str:
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before running react agent.")
         return self.react(state, state_step=state_step, task_id=task_id)

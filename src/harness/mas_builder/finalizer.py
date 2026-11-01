@@ -3,36 +3,36 @@ from typing import Optional
 
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 
-from harness.utils.llm import get_chat_model
+from langchain_openai import ChatOpenAI
+
 from harness.utils.logger import append_to_csv
-from harness.utils.prompts import FINALIZER_TASK_PROMPT_TEMPLATE, GAIA_FINALIZER_PROMPT
+from harness.utils.prompts import (
+    FINALIZER_TASK_PROMPT_TEMPLATE,
+    GAIA_FINALIZER_PROMPT,
+    state_to_text,
+)
 
 
 class FinalizerNode:
-    model_name: Optional[str]
     system_prompt: str
     log_path: str
+    llm_client: ChatOpenAI
 
     def __init__(
         self,
-        model_name: Optional[str] = None,
-        log_path: str ,
+        log_path: str = "",
+        llm_client: Optional[ChatOpenAI] = None,
     ) -> None:
-        self.model_name = model_name
         self.system_prompt = GAIA_FINALIZER_PROMPT
         self.log_path = log_path
-        self.llm = get_chat_model()
+        self.llm_client = llm_client
 
     def set_log_path(self, log_path: str) -> None:
         self.log_path = log_path
 
     @staticmethod
     def state_to_text(messages: list[AnyMessage]) -> str:
-        lines: list[str] = []
-        for m in messages:
-            role = m.name if m.name else m.type
-            lines.append(f"[{role}]: {m.content}")
-        return "\n".join(lines)
+        return state_to_text(messages)
 
     def finalize(
         self,
@@ -44,7 +44,7 @@ class FinalizerNode:
         past_conversation = self.state_to_text(messages)
 
         try:
-            res = self.llm.invoke([
+            res = self.llm_client.invoke([
                 SystemMessage(content=self.system_prompt),
                 HumanMessage(
                     content=FINALIZER_TASK_PROMPT_TEMPLATE.format(past_conversation=past_conversation)
@@ -53,12 +53,12 @@ class FinalizerNode:
             output_text = str(res.content).strip()
             duration = time.perf_counter() - t_start
             usage = res.usage_metadata
-            llm_tkns_in = usage["input_tokens"]
-            llm_tkns_out = usage["output_tokens"]
+            llm_client_tkns_in = usage["input_tokens"]
+            llm_client_tkns_out = usage["output_tokens"]
             self.log_step(
                 state_step=state_step,
-                llm_tkns_in=llm_tkns_in,
-                llm_tkns_out=llm_tkns_out,
+                llm_client_tkns_in=llm_client_tkns_in,
+                llm_client_tkns_out=llm_client_tkns_out,
                 fdm_tkns_in=0,
                 fdm_tkns_out=0,
                 duration=duration,
@@ -72,8 +72,8 @@ class FinalizerNode:
             error = str(e)
             self.log_step(
                 state_step=state_step,
-                llm_tkns_in=0,
-                llm_tkns_out=0,
+                llm_client_tkns_in=0,
+                llm_client_tkns_out=0,
                 fdm_tkns_in=0,
                 fdm_tkns_out=0,
                 duration=duration,
@@ -86,8 +86,8 @@ class FinalizerNode:
     def log_step(
         self,
         state_step: int,
-        llm_tkns_in: int,
-        llm_tkns_out: int,
+        llm_client_tkns_in: int,
+        llm_client_tkns_out: int,
         fdm_tkns_in: int,
         fdm_tkns_out: int,
         duration: float,
@@ -102,8 +102,8 @@ class FinalizerNode:
             "state_step": state_step,
             "reasoning": False,
             "compute_time_seconds": duration,
-            "llm_tkns_in": llm_tkns_in,
-            "llm_tkns_out": llm_tkns_out,
+            "llm_client_tkns_in": llm_client_tkns_in,
+            "llm_client_tkns_out": llm_client_tkns_out,
             "fdm_tkns_in": fdm_tkns_in,
             "fdm_tkns_out": fdm_tkns_out,
             "response": response,

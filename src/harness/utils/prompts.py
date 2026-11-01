@@ -3,7 +3,8 @@ GAIA_FINALIZER_PROMPT = """You are the finalizer agent in a GAIA benchmark evalu
 Given the task and the intermediate steps/results from the subagents, synthesize the findings and output ONLY the final answer to the user's question.
 - Format the response exactly as required by GAIA: direct, minimal, and without any explanations or conversational filler.
 - If the question asks for a number, output only the number.
-- If the question asks for a specific format (e.g., comma-separated list, unit, exact wording), follow it strictly."""
+- If the question asks for a specific format (e.g., comma-separated list, unit, exact wording), follow it strictly.
+- When instructed to omit punctuation or return plain text, always preserve natural spaces between words unless the question explicitly asks to remove spaces."""
 
 FINALIZER_TASK_PROMPT_TEMPLATE = (
     "Here is the task and all intermediate subagent findings:\n"
@@ -59,3 +60,21 @@ FDM_REACT_INSTRUCTIONS_TEMPLATE = (
 FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE = "Call the tool '{action}' with the required arguments."
 
 FDM_REACT_FINISH_DESCRIPTION = "Stop when task is complete"
+
+
+def state_to_text(state) -> str:
+    if isinstance(state, list):
+        messages = state
+    else:
+        messages = state.messages
+
+    lines: list[str] = []
+    for m in messages:
+        if m.name:
+            role = m.name
+        else:
+            role = m.type
+        lines.append(f"[{role}]: {m.content}")
+
+    return "\n".join(lines)
+

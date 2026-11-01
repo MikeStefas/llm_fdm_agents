@@ -1,7 +1,16 @@
 from abc import ABC, abstractmethod
+from typing import Optional
+from langchain_core.messages import AIMessage
+from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
-from harness.utils.prompts import NEXT_SUBAGENT_FIELD_DESCRIPTION, SUBAGENT_PROMPT_FIELD_DESCRIPTION
+from typesafe_sdk import SystemOneResponse, TypeSafeClient
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import append_to_csv
+from harness.utils.prompts import (
+    NEXT_SUBAGENT_FIELD_DESCRIPTION,
+    SUBAGENT_PROMPT_FIELD_DESCRIPTION,
+    state_to_text,
+)
 
 
 class NextSubagentDecision(BaseModel):
@@ -14,21 +23,24 @@ class DualOrchestratorDecision(BaseModel):
 
 
 class BaseOrchestrator(ABC):
-    model_name: str
-    log_path: str
+    log_path: Optional[str]
     subagents: list[BaseReactAgent]
     agent_descriptions: dict[str, str]
     subagents_names: list[str]
+    llm_client: Optional[ChatOpenAI]
+    fdm_client: Optional[TypeSafeClient]
 
     def __init__(
         self,
-        model_name: str,
         subagents: list[BaseReactAgent],
-        log_path: str = "orchestrator.csv",
+        log_path: Optional[str] = None,
+        llm_client: Optional[ChatOpenAI] = None,
+        fdm_client: Optional[TypeSafeClient] = None,
     ) -> None:
-        self.model_name = model_name
         self.subagents = subagents
         self.log_path = log_path
+        self.llm_client = llm_client
+        self.fdm_client = fdm_client
         self.agent_descriptions = {agent.subagent_name: agent.description for agent in self.subagents}
         self.subagents_names = [agent.subagent_name for agent in self.subagents]
 
@@ -40,16 +52,61 @@ class BaseOrchestrator(ABC):
 
     @staticmethod
     def state_to_text(state: object) -> str:
-        messages = state if isinstance(state, list) else state.messages
-        lines: list[str] = []
-        for m in messages:
-            role = m.name if m.name else m.type
-            lines.append(f"[{role}]: {m.content}")
-        return "\n".join(lines)
+        return state_to_text(state)
 
     @abstractmethod
     def orchestrate(self, state: object) -> object:
         pass
 
+    def log_step(
+        self,
+        state_step: int,
+        decision: str,
+        res: AIMessage | SystemOneResponse | None = None,
+        duration: float = 0.0,
+        error: str | None = None,
+        task_id: str | None = None,
+        llm_tkns_in: int = 0,
+        llm_tkns_out: int = 0,
+        fdm_tkns_in: int = 0,
+        fdm_tkns_out: int = 0,
+        confidence: object = None,
+        probabilities: object = None,
+    ) -> None:
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before logging.")
+
+        if isinstance(res, SystemOneResponse):
+            ans = res.answers.get("next_subagent") if res.answers else None
+            if ans is not None:
+                confidence = getattr(ans, "confidence", None)
+                probabilities = getattr(ans, "probabilities", None)
+            if res.usage is not None:
+                fdm_tkns_in = getattr(res.usage, "input_tokens", 0)
+                fdm_tkns_out = getattr(res.usage, "output_tokens", 0)
+        elif isinstance(res, AIMessage):
+            usage = getattr(res, "usage_metadata", None) or {}
+            llm_tkns_in = usage.get("input_tokens", 0)
+            llm_tkns_out = usage.get("output_tokens", 0)
+
+        log = {
+            "task_id": task_id,
+            "node": "orchestrator",
+            "subagent_steps": None,
+            "state_step": state_step,
+            "confidence": confidence,
+            "probabilities": probabilities,
+            "compute_time_seconds": duration,
+            "llm_tkns_in": llm_tkns_in,
+            "llm_tkns_out": llm_tkns_out,
+            "fdm_tkns_in": fdm_tkns_in,
+            "fdm_tkns_out": fdm_tkns_out,
+            "response": decision,
+            "error": error,
+        }
+        append_to_csv(self.log_path, log)
+
     def __call__(self, state: object) -> object:
+        if self.log_path is None:
+            raise ValueError("log_path is not set. Call set_log_path() before orchestrating.")
         return self.orchestrate(state)

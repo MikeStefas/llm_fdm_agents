@@ -29,8 +29,14 @@
   - `llm_react_agent.py`: Tool-calling agent powered by LLM.
   - `fdm_react_agent.py`: Tool-calling agent powered by FDM decisions.
 - **`tools/`**: Domain toolkits for subagents.
-- **`experiments/`**:
-  - `initialised_subagents.py`: Pre-configured subagent instances.
-  - `initialised_orchs.py`: Pre-configured orchestrator instances.
-  - `states.py`: LangGraph state schemas.
-  - `graphbuilder.py`: LangGraph StateGraph wiring orchestrators, subagents.
+- **`mas_builder/`**:
+  - `mas_builder.py`: LangGraph StateGraph wiring orchestrators, subagents, and finalizer.
+  - `finalizer.py`: `FinalizerNode` for benchmark task synthesis and logging.
+- **`utils/`**: Shared utilities, prompts, logging, and LLM configuration.
+
+## Root Files
+
+- `main.py`: Entrypoint for running workflows.
+- `initialised_subagents.py`: Pre-configured subagent instances.
+- `initialised_orchs.py`: Pre-configured orchestrator instances.
+- `states.py`: LangGraph state schemas.
