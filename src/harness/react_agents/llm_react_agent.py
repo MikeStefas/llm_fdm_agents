@@ -35,15 +35,9 @@ class LLMReactAgent(BaseReactAgent):
             raise ValueError("log_path is not set. Call set_log_path() before running react agent.")
         substep_count = 0
         final_res = None
-        system_instruction = (
-            f"You are the '{self.subagent_name}' agent in a multi-agent system.\n"
-            f"Your role & capabilities: {self.description}\n"
-            "Use your tools to execute actions and extract information. "
-            "When reporting findings, always include full verbatim transcriptions, exact numbers, and detailed text from your tool observations so the orchestrator and subsequent agents have complete information."
-        )
         messages = list(state)
         if not messages or not isinstance(messages[0], SystemMessage):
-            messages = [SystemMessage(content=system_instruction)] + messages
+            messages = [SystemMessage(content=self.system_prompt)] + messages
         t_substep_start = time.perf_counter()
 
         try:
@@ -54,9 +48,9 @@ class LLMReactAgent(BaseReactAgent):
 
                 # llm decides next action and args
                 res = self.bound_llm.invoke(messages)
-                usage = getattr(res, "usage_metadata", None) or {}
-                step_tkns_in = usage.get("input_tokens", 0)
-                step_tkns_out = usage.get("output_tokens", 0)
+                if res.usage_metadata:
+                    step_tkns_in = res.usage_metadata["input_tokens"]
+                    step_tkns_out = res.usage_metadata["output_tokens"]
 
                 # If no tool calls, this is the final natural response directly
                 if not res.tool_calls:
@@ -124,9 +118,9 @@ class LLMReactAgent(BaseReactAgent):
                     )
                 )
                 final_res = self.llm_client.invoke(messages)
-                usage = getattr(final_res, "usage_metadata", None) or {}
-                step_tkns_in = usage.get("input_tokens", 0)
-                step_tkns_out = usage.get("output_tokens", 0)
+                if final_res.usage_metadata:
+                    step_tkns_in = final_res.usage_metadata["input_tokens"]
+                    step_tkns_out = final_res.usage_metadata["output_tokens"]
                 duration = time.perf_counter() - t_substep_start
                 output_text = str(final_res.content)
                 self.log_step(

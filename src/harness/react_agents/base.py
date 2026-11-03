@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from langchain_core.messages import BaseMessage
 from langchain_core.tools import Tool
-from harness.utils.prompts import state_to_text
+from harness.utils.prompts import get_subagent_system_prompt, state_to_text
 from harness.utils import append_to_csv
 
 
@@ -13,6 +13,7 @@ class BaseReactAgent(ABC):
     tools: list[Tool]
     tools_by_name: dict[str, Tool]
     description: str
+    system_prompt: str
     max_iter: int
 
     def __init__(
@@ -27,6 +28,7 @@ class BaseReactAgent(ABC):
         self.tools = tools
         self.tools_by_name = {tool.name: tool for tool in tools}
         self.description = description
+        self.system_prompt = get_subagent_system_prompt(subagent_name, description)
         self.max_iter = max_iter
         self.log_path = log_path
 

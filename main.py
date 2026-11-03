@@ -30,7 +30,7 @@ llm_client = ChatOpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
     temperature=0.0,
-    top_p=0.001,
+    max_tokens=4096,
     seed=42,
     reasoning_effort="none",
 )
@@ -85,7 +85,7 @@ llm_orchestrator = LLMOrchestrator(
 
 mas = MultiAgentSystem(
     orchestrator=llm_orchestrator,
-    log_path="results/mas_log.csv",
+    log_path="results/llm/mas_log.csv",
 )
 graph = mas.build_graph()
 
@@ -161,8 +161,8 @@ tasks = [
         },
     ]
  
-
-for i in tasks:
+if __name__ == "__main__":
+    for i in tasks:
         task_id = i["task_id"]
         mas.set_log_path(f"results/mas_log_{task_id}.csv")
         question = i["question"]

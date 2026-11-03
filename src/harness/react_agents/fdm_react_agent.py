@@ -2,7 +2,13 @@ import json
 import time
 from typing import Optional, cast
 from typing_extensions import override
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    SystemMessage,
+    ToolMessage,
+)
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
@@ -45,6 +51,8 @@ class FDMReactAgent(BaseReactAgent):
         substep_count = 0
         final_res = None
         messages = list(state)
+        if not messages or not isinstance(messages[0], SystemMessage):
+            messages = [SystemMessage(content=self.system_prompt)] + messages
         t_substep_start = time.perf_counter()
 
         try:
@@ -66,9 +74,9 @@ class FDMReactAgent(BaseReactAgent):
                 # If finish action, generate final response directly
                 if action == "Finish":
                     final_res = self.llm_client.invoke(messages)
-                    usage = getattr(final_res, "usage_metadata", None) or {}
-                    step_llm_in += usage.get("input_tokens", 0)
-                    step_llm_out += usage.get("output_tokens", 0)
+                    if final_res.usage_metadata:
+                        step_llm_in += final_res.usage_metadata["input_tokens"]
+                        step_llm_out += final_res.usage_metadata["output_tokens"]
                     duration = time.perf_counter() - t_substep_start
                     self.log_step(
                         substep_count=substep_count,
@@ -106,9 +114,9 @@ class FDMReactAgent(BaseReactAgent):
 
                 # llm generates arguments for tool call and calc usage
                 arg_res = self._generate_args(messages, action)
-                usage = getattr(arg_res, "usage_metadata", None) or {}
-                step_llm_in += usage.get("input_tokens", 0)
-                step_llm_out += usage.get("output_tokens", 0)
+                if arg_res.usage_metadata:
+                    step_llm_in += arg_res.usage_metadata["input_tokens"]
+                    step_llm_out += arg_res.usage_metadata["output_tokens"]
 
                 # If no tool calls, this is the final natural response directly
                 if not arg_res.tool_calls:
@@ -176,9 +184,9 @@ class FDMReactAgent(BaseReactAgent):
                     )
                 )
                 final_res = self.llm_client.invoke(messages)
-                usage = getattr(final_res, "usage_metadata", None) or {}
-                step_llm_in = usage.get("input_tokens", 0)
-                step_llm_out = usage.get("output_tokens", 0)
+                if final_res.usage_metadata:
+                    step_llm_in = final_res.usage_metadata["input_tokens"]
+                    step_llm_out = final_res.usage_metadata["output_tokens"]
                 duration = time.perf_counter() - t_substep_start
                 output_text = str(final_res.content)
                 self.log_step(

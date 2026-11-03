@@ -29,7 +29,7 @@ class LLMOrchestrator(BaseOrchestrator):
         if self.log_path is None:
             raise ValueError("log_path is not set. Call set_log_path() before orchestrating.")
         t_start = time.perf_counter()
-        task_id = state.get("task_id") if isinstance(state, dict) else state.task_id
+        task_id = state.task_id 
         
         state_text = self.state_to_text(state)
 

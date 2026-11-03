@@ -20,8 +20,16 @@ from harness.utils.prompts import (
     LLM_ROUTED_LLM_PROMPTED_SYSTEM_PROMPT,
     NEXT_SUBAGENT_FIELD_DESCRIPTION,
     SUBAGENT_PROMPT_FIELD_DESCRIPTION,
+    SUBAGENT_SYSTEM_PROMPTS,
+    get_subagent_system_prompt,
+    MEDIA_READER_SYSTEM_PROMPT,
+    WEB_SEARCH_SYSTEM_PROMPT,
+    BROWSER_SYSTEM_PROMPT,
+    DOC_READER_SYSTEM_PROMPT,
+    CODE_INTERPRETER_SYSTEM_PROMPT,
     state_to_text,
 )
+from harness.utils.official_gaia_scorer import question_scorer
 from harness.utils import descriptions, logger, prompts
 
 __all__ = [
@@ -53,4 +61,6 @@ __all__ = [
     "FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE",
     "FDM_REACT_FINISH_DESCRIPTION",
     "state_to_text",
+    # Scorer
+    "question_scorer",
 ]

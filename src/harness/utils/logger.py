@@ -21,7 +21,7 @@ LOG_FIELDNAMES = [
 
 def append_to_csv(log_path: str, log_data: dict[str, Any]) -> None:
     row = dict(log_data)
-    if isinstance(row.get("response"), (dict, list)):
+    if isinstance(row["response"], (dict, list)):
         row["response"] = json.dumps(row["response"])
 
     dirname = os.path.dirname(log_path)

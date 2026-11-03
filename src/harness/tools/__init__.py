@@ -1,5 +1,3 @@
-"""Consolidated tools package exporting tools for each subagent."""
-
 from harness.tools.browser_tools import BROWSER_TOOLS, get_async_playwright_tools
 from harness.tools.code_tools import CODE_TOOLS, python_ast_repl, python_repl, shell_tool
 from harness.tools.doc_reader_tools import (

@@ -1,5 +1,3 @@
-"""Web search and informational retrieval tools."""
-
 import os
 import warnings
 

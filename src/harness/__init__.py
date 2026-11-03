@@ -1,5 +1,3 @@
-"""Top-level harness package."""
-
 from harness.mas_builder import FinalizerNode
 from harness.utils import (
     LOG_FIELDNAMES,
@@ -9,8 +7,6 @@ from harness.utils import (
 from harness import mas_builder, orchestrators, react_agents, tools, utils
 
 
-def main() -> None:
-    print("Hello from harness (OpenRouter)!")
 
 
 __all__ = [

@@ -1,5 +1,3 @@
-"""Document reading and extraction tools."""
-
 import os
 import warnings
 

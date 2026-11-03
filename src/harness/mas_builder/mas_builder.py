@@ -25,7 +25,7 @@ class MultiAgentSystem:
     ):
         self.orchestrator = orchestrator
         self.subagents = orchestrator.get_subagents()
-        self.finalizer = FinalizerNode(log_path=log_path, llm_client=getattr(orchestrator, "llm_client", None))
+        self.finalizer = FinalizerNode(log_path=log_path, llm_client=orchestrator.llm_client)
 
         self.builder = StateGraph(State)
         self.log_path = log_path

@@ -1,5 +1,3 @@
-"""Media inspection tools: OCR, multimodal vision, and speech transcription."""
-
 import base64
 from io import BytesIO
 import os
@@ -13,14 +11,16 @@ import pydub
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
 
-def convert_to_base64(file_path: str) -> str:
-    """Convert image to Base64 encoded JPEG string."""
+def convert_to_base64(file_path: str, max_dimension: int = 1280) -> str:
+    """Convert image to Base64 encoded JPEG string, downscaling if larger than max_dimension."""
     pil_image = Image.open(file_path)
+    if max(pil_image.size) > max_dimension:
+        pil_image.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
     buffered = BytesIO()
     # Convert RGBA/palette to RGB if necessary for JPEG
     if pil_image.mode in ("RGBA", "P"):
         pil_image = pil_image.convert("RGB")
-    pil_image.save(buffered, format="JPEG")
+    pil_image.save(buffered, format="JPEG", quality=85)
     return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 
@@ -126,7 +126,10 @@ def transcribe_audio(path: str) -> str:
         input_features = processor(samples, sampling_rate=16000, return_tensors="pt").input_features
         predicted_ids = model.generate(input_features)
         transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
-        return transcription[0].strip() or "No speech detected in audio file."
+        text = transcription[0].strip()
+        if not text:
+            return "No speech detected in audio file."
+        return f"Transcribed audio: {text}"
     except Exception as e:
         return f"Error transcribing audio '{path}': {e}"
 

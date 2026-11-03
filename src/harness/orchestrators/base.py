@@ -77,17 +77,17 @@ class BaseOrchestrator(ABC):
             raise ValueError("log_path is not set. Call set_log_path() before logging.")
 
         if isinstance(res, SystemOneResponse):
-            ans = res.answers.get("next_subagent") if res.answers else None
-            if ans is not None:
-                confidence = getattr(ans, "confidence", None)
-                probabilities = getattr(ans, "probabilities", None)
+            if res.answers:
+                ans = res.answers["next_subagent"]
+                confidence = ans.confidence
+                probabilities = ans.probabilities
             if res.usage is not None:
-                fdm_tkns_in = getattr(res.usage, "input_tokens", 0)
-                fdm_tkns_out = getattr(res.usage, "output_tokens", 0)
+                fdm_tkns_in = res.usage.input_tokens
+                fdm_tkns_out = res.usage.output_tokens
         elif isinstance(res, AIMessage):
-            usage = getattr(res, "usage_metadata", None) or {}
-            llm_tkns_in = usage.get("input_tokens", 0)
-            llm_tkns_out = usage.get("output_tokens", 0)
+            if res.usage_metadata:
+                llm_tkns_in = res.usage_metadata["input_tokens"]
+                llm_tkns_out = res.usage_metadata["output_tokens"]
 
         log = {
             "task_id": task_id,
