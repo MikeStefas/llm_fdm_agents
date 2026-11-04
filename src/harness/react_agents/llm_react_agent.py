@@ -73,14 +73,15 @@ class LLMReactAgent(BaseReactAgent):
                     break
 
                 # Enforce single tool call!!!!
-                res.tool_calls = [res.tool_calls[0]]
+                active_tool_call = res.tool_calls[0]
+                res.tool_calls = [active_tool_call]
                 messages.append(res) #log required tool
 
-                tool_msg, substep_error = self.execute_tool_call(res.tool_calls[0])
+                tool_msg, substep_error = self.execute_tool_call(active_tool_call)
                 messages.append(tool_msg) #log tool res
 
                 duration = time.perf_counter() - t_substep_start
-                step_response = res.content 
+                step_response = res.content if res.content else str(tool_msg.content)
                 self.log_step(
                     substep_count=substep_count,
                     llm_tkns_in=step_tkns_in,
@@ -89,6 +90,8 @@ class LLMReactAgent(BaseReactAgent):
                     fdm_tkns_out=0,
                     duration=duration,
                     final_response=step_response,
+                    tool_name=str(active_tool_call["name"]),
+                    tool_args=active_tool_call["args"],
                     error=substep_error,
                     state_step=state_step,
                     task_id=task_id,

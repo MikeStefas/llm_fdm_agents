@@ -32,6 +32,12 @@ llm_client = ChatOpenAI(
     top_p=0.001,
     seed=42,
     reasoning_effort="none",
+    extra_body={
+        "provider": {
+            "order": ["DeepInfra"],
+            "allow_fallbacks": False,
+        }
+    },
 )
 
 fdm_client = TypeSafeClient(

@@ -10,9 +10,10 @@ from langchain_community.tools.file_management import (
 )
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from markitdown import MarkItDown
 
-_markitdown_converter = MarkItDown()
+from harness.utils.markitdown_config import shared_markitdown
+
+_markitdown_converter = shared_markitdown
 
 read_file_tool = ReadFileTool()
 file_search_tool = FileSearchTool()
@@ -44,6 +45,12 @@ def convert_file_to_markdown_and_read(path: str, task: str) -> str:
             api_key=os.getenv("OPENROUTER_API_KEY"),
             base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             temperature=0.0,
+            extra_body={
+                "provider": {
+                    "order": ["DeepInfra"],
+                    "allow_fallbacks": False,
+                }
+            },
         )
         llm_res = llm.invoke(f"{task}\n\n{content}")
         return str(llm_res.content)

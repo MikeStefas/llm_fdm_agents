@@ -6,7 +6,7 @@ NEXT_SUBAGENT_FIELD_DESCRIPTION = "The name of the next subagent to act, or 'fin
 SUBAGENT_PROMPT_FIELD_DESCRIPTION = "The instructions or prompt for the chosen subagent to execute"
 
 LLM_ORCHESTRATOR_SYSTEM_PROMPT = """You are the orchestrator of a team of subagents.
-Given the task state, decide which subagent should act next.
+Given the task state and previous agent observations, decide which subagent should act next.
 
 Available options:
 {available_options}

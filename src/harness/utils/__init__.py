@@ -28,13 +28,17 @@ from harness.utils.prompts import (
     state_to_text,
 )
 from harness.utils.official_gaia_scorer import question_scorer
-from harness.utils import descriptions, logger, prompts
+from harness.utils.vcr_config import my_vcr
+from harness.utils import descriptions, logger, prompts, vcr_config
 
 __all__ = [
     # Submodules
     "descriptions",
     "logger",
     "prompts",
+    "vcr_config",
+    # VCR
+    "my_vcr",
     # Logger
     "LOG_FIELDNAMES",
     "append_to_csv",

@@ -125,14 +125,15 @@ class FDMReactAgent(BaseReactAgent):
                     continue
 
                 # Single tool call!!!!
-                arg_res.tool_calls = [arg_res.tool_calls[0]]
+                active_tool_call = arg_res.tool_calls[0]
+                arg_res.tool_calls = [active_tool_call]
                 messages.append(arg_res) # log required tool
 
-                tool_msg, substep_error = self.execute_tool_call(arg_res.tool_calls[0])
+                tool_msg, substep_error = self.execute_tool_call(active_tool_call)
                 messages.append(tool_msg) # log tool res
 
                 duration = time.perf_counter() - t_substep_start
-                step_response = arg_res.content if arg_res.content else json.dumps(arg_res.tool_calls)
+                step_response = arg_res.content if arg_res.content else str(tool_msg.content)
                 self.log_step(
                     substep_count=substep_count,
                     llm_tkns_in=step_llm_in,
@@ -141,6 +142,8 @@ class FDMReactAgent(BaseReactAgent):
                     fdm_tkns_out=step_fdm_out,
                     duration=duration,
                     final_response=step_response,
+                    tool_name=str(active_tool_call["name"]),
+                    tool_args=active_tool_call["args"],
                     error=substep_error,
                     state_step=state_step,
                     task_id=task_id,

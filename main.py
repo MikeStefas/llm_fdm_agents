@@ -31,6 +31,12 @@ llm_client = ChatOpenAI(
     max_tokens=4096,
     seed=42,
     reasoning_effort="none",
+    extra_body={
+        "provider": {
+            "order": ["DeepInfra"],
+            "allow_fallbacks": False,
+        }
+    },
 )
 
 web_search_subagent = LLMReactAgent(
@@ -75,7 +81,7 @@ llm_orchestrator = LLMOrchestrator(
 
 mas = MultiAgentSystem(
     orchestrator=llm_orchestrator,
-    log_path="results/llm/mas_log.csv",
+    log_path="results/llm_1/mas_log.csv",
 )
 graph = mas.build_graph()
 
@@ -154,13 +160,11 @@ tasks = [
 if __name__ == "__main__":
     for i in tasks:
         task_id = i["task_id"]
-        mas.set_log_path(f"results/mas_log_{task_id}.csv")
+        mas.set_log_path(f"results/llm/mas_log_{task_id}.csv")
         question = i["question"]
         expected = i["expected_answer"]
 
         print(f"Running Task: {task_id}")
-        print(f"Question: {question}")
-        print(f"Expected: {expected}\n")
 
         initial_state = {
             "messages": [HumanMessage(content=question)],

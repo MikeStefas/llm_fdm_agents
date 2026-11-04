@@ -3,40 +3,21 @@ import tempfile
 import warnings
 import urllib.request
 import requests
-import vcr
 import wikipedia
 from ddg import Duckduckgo
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.tools import tool
-from markitdown import MarkItDown
+
+from harness.utils.markitdown_config import shared_markitdown
+from harness.utils.vcr_config import my_vcr
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 wikipedia.set_user_agent("GAIABenchmarkBot/1.0 (mike.research@gmail.com)")
 
-CACHE_ROOT = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
-    "cache",
-)
-CASSETTE_DIR = os.path.join(CACHE_ROOT, "vcr_cassettes")
-os.makedirs(CASSETTE_DIR, exist_ok=True)
-
-# VCR instance with recording decorator
-my_vcr = vcr.VCR(
-    cassette_library_dir=CASSETTE_DIR,
-    record_mode="new_episodes",
-    match_on=["method", "scheme", "host", "port", "path", "query"],
-    filter_headers=["authorization", "user-agent"],
-)
-
 _ddg_client = Duckduckgo()
-
-_web_session = requests.Session()
-_web_session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-})
-_markitdown_web_converter = MarkItDown(requests_session=_web_session)
+_markitdown_web_converter = shared_markitdown
 
 _raw_wiki_run = WikipediaQueryRun(
     api_wrapper=WikipediaAPIWrapper(top_k_results=2, doc_content_chars_max=4000)
@@ -81,9 +62,29 @@ def readable_webpage(url: str) -> str:
         return f"Error converting webpage to markdown: {e}"
 
 
+convert_webpage_to_markdown = readable_webpage
+duckduckgo_search_run = duckduckgo_search
+
+
+@tool
+@my_vcr.use_cassette("file_downloads.yaml")
+def file_from_url(url: str) -> str:
+    """Downloads a file from a URL to a local temporary file and returns its path."""
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        response = requests.get(url, headers=headers, timeout=20)
+        response.raise_for_status()
+        _, ext = os.path.splitext(url.split("?")[0])
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext or ".tmp") as tmp:
+            tmp.write(response.content)
+            return tmp.name
+    except Exception as e:
+        return f"Error downloading file: {e}"
+
 
 WEB_SEARCH_TOOLS = [
     duckduckgo_search,
     wikipedia_tool,
     readable_webpage,
+    file_from_url,
 ]

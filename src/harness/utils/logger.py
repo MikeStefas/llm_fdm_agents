@@ -8,6 +8,8 @@ LOG_FIELDNAMES = [
     "node",
     "subagent_steps",
     "state_step",
+    "tool_name",
+    "tool_args",
     "confidence",
     "probabilities",
     "reasoning",
@@ -23,8 +25,10 @@ LOG_FIELDNAMES = [
 
 def append_to_csv(log_path: str, log_data: dict[str, Any]) -> None:
     row = dict(log_data)
-    if isinstance(row["response"], (dict, list)):
+    if "response" in row and isinstance(row["response"], (dict, list)):
         row["response"] = json.dumps(row["response"])
+    if "tool_args" in row and isinstance(row["tool_args"], (dict, list)):
+        row["tool_args"] = json.dumps(row["tool_args"])
 
     dirname = os.path.dirname(log_path)
     if dirname:
