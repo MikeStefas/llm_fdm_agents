@@ -8,6 +8,8 @@ LOG_FIELDNAMES = [
     "node",
     "subagent_steps",
     "state_step",
+    "confidence",
+    "probabilities",
     "reasoning",
     "compute_time_seconds",
     "llm_tkns_in",

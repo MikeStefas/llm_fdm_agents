@@ -37,9 +37,10 @@ llm_client = ChatOpenAI(
 )
 
 fdm_client = TypeSafeClient(
-    model=os.getenv("FDM_MODEL", "cloudflare/clef-flash"),
-    api_key=os.getenv("FDM_API_KEY") or os.getenv("OPENROUTER_API_KEY"),
-    base_url=os.getenv("FDM_BASE_URL", "https://openrouter.ai/api"),
+    model="cloudflare/clef-flash",
+    api_key= os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api"
+    #TODO FIND A WAY TO ADD TEMP = 0
 )
 
 web_search_subagent = FDMReactAgent(
