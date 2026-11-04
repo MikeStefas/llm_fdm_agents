@@ -12,7 +12,7 @@ os.makedirs(CASSETTE_DIR, exist_ok=True)
 my_vcr = vcr.VCR(
     cassette_library_dir=CASSETTE_DIR,
     record_mode="new_episodes",
-    match_on=["method", "scheme", "host", "port", "path", "query"],
+    match_on=["method", "scheme", "host", "port", "path", "query", "body"],
     filter_headers=["authorization", "user-agent"],
 )
 

@@ -158,13 +158,14 @@ tasks = [
     ]
  
 if __name__ == "__main__":
-    for i in tasks:
+    for i in [tasks[1]]:
         task_id = i["task_id"]
-        mas.set_log_path(f"results/llm/mas_log_{task_id}.csv")
+        mas.set_log_path(f"results/llm_1/mas_log_{task_id}nigga.csv")
         question = i["question"]
         expected = i["expected_answer"]
 
         print(f"Running Task: {task_id}")
+        print(f"Expected:     {expected}\n")
 
         initial_state = {
             "messages": [HumanMessage(content=question)],
@@ -175,6 +176,5 @@ if __name__ == "__main__":
             res = graph.invoke(initial_state)
             final_msg = res["messages"][-1].content
             print(f"Final Result: {final_msg}")
-            print(f"Expected:     {expected}")
         except Exception as e:
             print(f"Error task {task_id}: {e}")

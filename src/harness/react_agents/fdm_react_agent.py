@@ -15,6 +15,7 @@ from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
 
 from harness.react_agents.base import BaseReactAgent
 from harness.utils.prompts import (
+    FDM_REACT_FINISH_ACTION,
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,
     FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE,
@@ -72,7 +73,7 @@ class FDMReactAgent(BaseReactAgent):
                     step_fdm_out += res.usage.output_tokens
 
                 # If finish action, generate final response directly
-                if action.lower() == "finish":
+                if action.lower() in ["no tool call", "finish"]:
                     final_res = self.llm_client.invoke(messages)
                     if final_res.usage_metadata:
                         step_llm_in += final_res.usage_metadata["input_tokens"]
@@ -175,7 +176,7 @@ class FDMReactAgent(BaseReactAgent):
             questions={"next_action": Choice(
                 instructions=FDM_REACT_INSTRUCTIONS_TEMPLATE.format(tools=list(self.criteria.keys())),
                 criteria=self.criteria,
-            )}
+            )},
         )
         action = str(res.answers["next_action"].choice).strip().strip("'\"")
         return action, res
@@ -191,7 +192,7 @@ class FDMReactAgent(BaseReactAgent):
         criteria = {}
         for tool_name, tool in self.tools_by_name.items():
             criteria[tool_name] = tool.description or tool_name
-        criteria["Finish"] = FDM_REACT_FINISH_DESCRIPTION
+        criteria[FDM_REACT_FINISH_ACTION] = FDM_REACT_FINISH_DESCRIPTION
         return criteria
 
     def _state_to_text(self, state: list[BaseMessage]) -> str:

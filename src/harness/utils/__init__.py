@@ -4,9 +4,11 @@ from harness.utils.descriptions import (
     MEDIA_READER_DESCRIPTION,
     WEB_SEARCH_DESCRIPTION,
 )
+from harness.utils.fdm_client import DeterministicFDMClient
 from harness.utils.logger import LOG_FIELDNAMES, append_to_csv
 from harness.utils.prompts import (
     FDM_ORCHESTRATOR_INSTRUCTIONS,
+    FDM_REACT_FINISH_ACTION,
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,
     FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE,
@@ -64,4 +66,6 @@ __all__ = [
     "state_to_text",
     # Scorer
     "question_scorer",
+    # Deterministic FDM Client
+    "DeterministicFDMClient",
 ]
