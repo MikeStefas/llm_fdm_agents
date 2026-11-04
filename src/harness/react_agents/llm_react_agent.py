@@ -21,12 +21,12 @@ class LLMReactAgent(BaseReactAgent):
         description: str,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 10,
+        max_iter: int = 30,
     ) -> None:
         super().__init__(subagent_name, tools, description, log_path=log_path, max_iter=max_iter)
 
         self.llm_client = llm_client
-        self.bound_llm = self.llm_client.bind_tools(self.tools)
+        self.bound_llm = self.llm_client.bind_tools(self.tools, parallel_tool_calls=False)
 
 
     @override
@@ -72,18 +72,16 @@ class LLMReactAgent(BaseReactAgent):
 
                 messages.append(res)
 
-                # tool/function call happens here
-                for tool_call in res.tool_calls:
-                    name = str(tool_call["name"])
-                    tool_call_id = str(tool_call["id"])
+                # Single tool execution per step
+                tool_call = res.tool_calls[0]
+                name = str(tool_call["name"])
+                tool_call_id = str(tool_call["id"])
 
-                    if name not in self.tools_by_name:
-                        substep_error = f"Tool Error: Tool '{name}' not found."
-                        messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
-                        continue
-
+                if name not in self.tools_by_name:
+                    substep_error = f"Tool Error: Tool '{name}' not found."
+                    messages.append(ToolMessage(content=substep_error, tool_call_id=tool_call_id))
+                else:
                     tool = self.tools_by_name[name]
-
                     try:
                         observation = tool.invoke(tool_call["args"])
                         messages.append(ToolMessage(content=str(observation), tool_call_id=tool_call_id))

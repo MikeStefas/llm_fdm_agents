@@ -22,10 +22,12 @@ class MultiAgentSystem:
         self,
         orchestrator: BaseOrchestrator,
         log_path: str,
+        max_steps: int = 20,
     ):
         self.orchestrator = orchestrator
         self.subagents = orchestrator.get_subagents()
         self.finalizer = FinalizerNode(log_path=log_path, llm_client=orchestrator.llm_client)
+        self.max_steps = max_steps
 
         self.builder = StateGraph(State)
         self.log_path = log_path
@@ -112,6 +114,9 @@ class MultiAgentSystem:
         )
 
     def _routing_condition(self, state: State) -> str:
+        if state.state_step >= self.max_steps:
+            return "finalizer"
+
         for subagent in self.subagents:
             if state.next_subagent == subagent.subagent_name:
                 return subagent.subagent_name

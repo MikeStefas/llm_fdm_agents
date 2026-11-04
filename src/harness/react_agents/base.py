@@ -22,7 +22,7 @@ class BaseReactAgent(ABC):
         tools: list[Tool],
         description: str,
         log_path: Optional[str] = None,
-        max_iter: int = 10,
+        max_iter: int = 30,
     ) -> None:
         self.subagent_name = subagent_name
         self.tools = tools

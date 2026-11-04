@@ -55,8 +55,8 @@ Write a clear, concise instruction/prompt for '{chosen_agent}' based on the task
 
 
 FDM_REACT_INSTRUCTIONS_TEMPLATE = (
-    "You are a react agent. Given the state of the task, decide the next action. "
-    "You can use the following tools: {tools}"
+    "You are a react agent. Given the task state and tool observations, decide the next action. "
+    "Choose one of the available tools ({tools}) to inspect or compute data, or choose 'Finish' if you have gathered enough information to answer."
 )
 
 FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE = "Call the tool '{action}' with the required arguments."
