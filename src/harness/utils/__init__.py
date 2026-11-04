@@ -1,5 +1,4 @@
 from harness.utils.descriptions import (
-    BROWSER_DESCRIPTION,
     CODE_INTERPRETER_DESCRIPTION,
     DOC_READER_DESCRIPTION,
     MEDIA_READER_DESCRIPTION,
@@ -24,7 +23,6 @@ from harness.utils.prompts import (
     get_subagent_system_prompt,
     MEDIA_READER_SYSTEM_PROMPT,
     WEB_SEARCH_SYSTEM_PROMPT,
-    BROWSER_SYSTEM_PROMPT,
     DOC_READER_SYSTEM_PROMPT,
     CODE_INTERPRETER_SYSTEM_PROMPT,
     state_to_text,
@@ -42,7 +40,6 @@ __all__ = [
     "append_to_csv",
     # Descriptions
     "WEB_SEARCH_DESCRIPTION",
-    "BROWSER_DESCRIPTION",
     "DOC_READER_DESCRIPTION",
     "MEDIA_READER_DESCRIPTION",
     "CODE_INTERPRETER_DESCRIPTION",

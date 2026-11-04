@@ -36,18 +36,6 @@ Strict PROHIBITIONS (DO NOT DO ANY OF THE FOLLOWING):
 - DO NOT attempt to read local image or audio files (that is handled by media_reader).
 - DO NOT format the final GAIA benchmark answer or guess when search results are available; report the factual evidence retrieved."""
 
-BROWSER_SYSTEM_PROMPT = """You are the 'browser' agent in a multi-agent system.
-Your SOLE responsibility is to navigate live web pages requiring browser interaction, clicking, or dynamic rendering.
-
-What you MUST do:
-- Navigate to specific URLs, interact with page elements, and extract text and tables from web pages.
-- Report observations, page content, and links found on the web pages.
-
-Strict PROHIBITIONS (DO NOT DO ANY OF THE FOLLOWING):
-- DO NOT perform general web search if a search engine tool can do it.
-- DO NOT run Python calculations or scripts.
-- DO NOT attempt to read local files or media."""
-
 DOC_READER_SYSTEM_PROMPT = """You are the 'doc_reader' agent in a multi-agent system.
 Your SOLE responsibility is to read and extract content from local documents and spreadsheets (PDF, DOCX, XLSX, CSV, TXT, Markdown).
 
@@ -86,7 +74,6 @@ Strict PROHIBITIONS (DO NOT DO ANY OF THE FOLLOWING):
 SUBAGENT_SYSTEM_PROMPTS = {
     "media_reader": MEDIA_READER_SYSTEM_PROMPT,
     "web_search": WEB_SEARCH_SYSTEM_PROMPT,
-    "browser": BROWSER_SYSTEM_PROMPT,
     "doc_reader": DOC_READER_SYSTEM_PROMPT,
     "code_interpreter": CODE_INTERPRETER_SYSTEM_PROMPT,
 }

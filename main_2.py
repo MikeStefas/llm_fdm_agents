@@ -9,14 +9,12 @@ from harness.mas_builder import MultiAgentSystem
 from harness.orchestrators import FDMOrchestrator
 from harness.react_agents import FDMReactAgent
 from harness.tools import (
-    BROWSER_TOOLS,
     CODE_TOOLS,
     DOC_READER_TOOLS,
     MEDIA_READER_TOOLS,
     WEB_SEARCH_TOOLS,
 )
 from harness.utils import (
-    BROWSER_DESCRIPTION,
     CODE_INTERPRETER_DESCRIPTION,
     DOC_READER_DESCRIPTION,
     MEDIA_READER_DESCRIPTION,
@@ -51,14 +49,6 @@ web_search_subagent = FDMReactAgent(
     llm_client=llm_client,
 )
 
-browser_subagent = FDMReactAgent(
-    subagent_name="browser",
-    tools=BROWSER_TOOLS,
-    description=BROWSER_DESCRIPTION,
-    fdm_client=fdm_client,
-    llm_client=llm_client,
-)
-
 doc_reader_subagent = FDMReactAgent(
     subagent_name="doc_reader",
     tools=DOC_READER_TOOLS,
@@ -85,7 +75,6 @@ code_interpreter_subagent = FDMReactAgent(
 
 subagents = [
     web_search_subagent,
-    browser_subagent,
     doc_reader_subagent,
     media_reader_subagent,
     code_interpreter_subagent,

@@ -8,14 +8,12 @@ from harness.mas_builder import MultiAgentSystem
 from harness.orchestrators import LLMOrchestrator
 from harness.react_agents import LLMReactAgent
 from harness.tools import (
-    BROWSER_TOOLS,
     CODE_TOOLS,
     DOC_READER_TOOLS,
     MEDIA_READER_TOOLS,
     WEB_SEARCH_TOOLS,
 )
 from harness.utils import (
-    BROWSER_DESCRIPTION,
     CODE_INTERPRETER_DESCRIPTION,
     DOC_READER_DESCRIPTION,
     MEDIA_READER_DESCRIPTION,
@@ -42,13 +40,6 @@ web_search_subagent = LLMReactAgent(
     llm_client=llm_client,
 )
 
-browser_subagent = LLMReactAgent(
-    subagent_name="browser",
-    tools=BROWSER_TOOLS,
-    description=BROWSER_DESCRIPTION,
-    llm_client=llm_client,
-)
-
 doc_reader_subagent = LLMReactAgent(
     subagent_name="doc_reader",
     tools=DOC_READER_TOOLS,
@@ -72,7 +63,6 @@ code_interpreter_subagent = LLMReactAgent(
 
 subagents = [
     web_search_subagent,
-    browser_subagent,
     doc_reader_subagent,
     media_reader_subagent,
     code_interpreter_subagent,

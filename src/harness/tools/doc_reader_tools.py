@@ -18,7 +18,6 @@ read_file_tool = ReadFileTool()
 file_search_tool = FileSearchTool()
 list_directory_tool = ListDirectoryTool()
 
-
 @tool
 def convert_file_to_markdown_and_read(path: str, task: str) -> str:
     """Converts almost any document, presentation, or spreadsheet (PDF, DOCX, PPTX, XLSX, CSV, HTML, etc.)
