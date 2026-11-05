@@ -20,24 +20,7 @@ from harness.utils import (
     WEB_SEARCH_DESCRIPTION,
 )
 
-load_dotenv()
-
-
-llm_client = ChatOpenAI(
-    model="qwen/qwen3.5-9b",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1",
-    temperature=0.0,
-    max_tokens=4096,
-    seed=42,
-    reasoning_effort="none",
-    extra_body={
-        "provider": {
-            "order": ["DeepInfra"],
-            "allow_fallbacks": False,
-        }
-    },
-)
+from config import llm_client
 
 web_search_subagent = LLMReactAgent(
     subagent_name="web_search",
@@ -87,80 +70,143 @@ graph = mas.build_graph()
 
 
 tasks = [
-        {
-            "task_id": "b2c257e0-3ad7-4f05-b8e3-d9da973be36e",
-            "file": "data/gaia/b2c257e0-3ad7-4f05-b8e3-d9da973be36e.jpg",
-            "question": (
-                "If this whole pint is made up of ice cream, how many percent above or below "
-                "the US federal standards for butterfat content is it when using the standards as "
-                "reported by Wikipedia in 2020? Answer as + or - a number rounded to one decimal place. "
-                "The attached image of the pint label is located at: data/gaia/b2c257e0-3ad7-4f05-b8e3-d9da973be36e.jpg"
-            ),
-            "expected_answer": "+4.6",
-        },
-        {
-            "task_id": "17b5a6a3-bc87-42e8-b0fb-6ab0781ef2cc",
-            "file": None,
-            "question": (
-                "I’m researching species that became invasive after people who kept them as pets released them. "
-                "There’s a certain species of fish that was popularized as a pet by being the main character "
-                "of the movie Finding Nemo. According to the USGS, where was this fish found as a nonnative species, "
-                "before the year 2020? I need the answer formatted as the five-digit zip codes of the places the species was found, "
-                "separated by commas if there is more than one place."
-            ),
-            "expected_answer": "34689",
-        },
-        {
-            "task_id": "2b3ef98c-cc05-450b-a719-711aee40ac65",
-            "file": "data/gaia/2b3ef98c-cc05-450b-a719-711aee40ac65.mp3",
-            "question": (
-                "Could you help me out with this assignment? Our professor sprung it on us at the end of class Friday, "
-                "and I'm still trying to figure it out. The question he asked us was about an anagram. I've attached an audio recording "
-                "of the question that he asked (located at data/gaia/2b3ef98c-cc05-450b-a719-711aee40ac65.mp3), so if you could please "
-                "take a listen and give me the answer, I'd really appreciate the help. Please limit your response to the anagram text that "
-                "could be generated from the original line which fulfills the professor's request, without any other commentary. "
-                "Also, please don't include any punctuation in your response."
-            ),
-            "expected_answer": "To be or not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune",
-        },
-        {
-            "task_id": "076c8171-9b3b-49b9-a477-244d2a532826",
-            "file": "data/gaia/076c8171-9b3b-49b9-a477-244d2a532826.xlsx",
-            "question": (
-                "The attached file (located at data/gaia/076c8171-9b3b-49b9-a477-244d2a532826.xlsx) contains a list of vendors "
-                "in the Liminal Springs mall, along with each vendor’s monthly revenue and the rent they pay the mall. "
-                "I want you to find the vendor that makes the least money, relative to the rent it pays. "
-                "Then, tell me what is listed in the “type” column for that vendor."
-            ),
-            "expected_answer": "Finance",
-        },
-        {
-            "task_id": "7dd30055-0198-452e-8c25-f73dbe27dcb8",
-            "file": "data/gaia/7dd30055-0198-452e-8c25-f73dbe27dcb8.pdb",
-            "question": (
-                "Using the Biopython library in Python, parse the PDB file of the protein identified by the PDB ID 5wb7 "
-                "from the RCSB Protein Data Bank (the file is provided locally at: data/gaia/7dd30055-0198-452e-8c25-f73dbe27dcb8.pdb). "
-                "Calculate the distance between the first and second atoms as they are listed in the PDB file. "
-                "Report the answer in Angstroms, rounded to the nearest picometer."
-            ),
-            "expected_answer": "1.456",
-        },
-        {
-            "task_id": "c61d22de-5f6c-4958-a7f6-5e9707bd3466",
-            "file": None,
-            "question": (
-                "A paper about AI regulation that was originally submitted to arXiv.org in June 2022 shows a figure with three axes, "
-                "where each axis has a label word at both ends. Which of these words is used to describe a type of society in a "
-                "Physics and Society article submitted to arXiv.org on August 11, 2016?"
-            ),
-            "expected_answer": "egalitarian",
-        },
-    ]
- 
+    {
+        "task_id": "676e5e31-a554-4acc-9286-b60d90a92d26",
+        "file": None,
+        "question": (
+            'In July 2, 1959 United States standards for grades of processed fruits, vegetables, '
+            'and certain other products listed as dehydrated, consider the items in the "dried '
+            'and dehydrated section" specifically marked as dehydrated along with any items in '
+            'the Frozen/Chilled section that contain the whole name of the item, but not if '
+            "they're marked Chilled. As of August 2023, what is the percentage (to the nearest "
+            'percent) of those standards that have been superseded by a new version since the '
+            'date given in the 1959 standards?'
+        ),
+        "expected_answer": "86",
+    },
+    {
+        "task_id": "bec74516-02fc-48dc-b202-55e78d0e17cf",
+        "file": "data/gaia/bec74516-02fc-48dc-b202-55e78d0e17cf.jsonld",
+        "question": (
+            "What is the average number of pre-2020 works on the open researcher and contributor "
+            "identification pages of the people whose identification is in this file? (The "
+            "attached file is located at: data/gaia/bec74516-02fc-48dc-b202-55e78d0e17cf.jsonld)"
+        ),
+        "expected_answer": "26.4",
+    },
+    {
+        "task_id": "00d579ea-0889-4fd9-a771-2c8d79835c8d",
+        "file": None,
+        "question": (
+            "Assuming scientists in the famous youtube video The Thinking Machine (Artificial "
+            "Intelligence in the 1960s) were interviewed the same year, what is the name of the "
+            "scientist predicting the sooner thinking machines or robots? Answer using the "
+            "format First name Last name"
+        ),
+        "expected_answer": "Claude Shannon",
+    },
+    {
+        "task_id": "384d0dd8-e8a4-4cfe-963c-d37f256e7662",
+        "file": None,
+        "question": (
+            "In the NCATS PubChem compound database for Food Additive Status classification, "
+            "find the compound that has a molecular weight of 100 g/mol or less, 6 heavy atoms, "
+            "1 or fewer hydrogen bond acceptors, and a complexity between 10 and 15. Of the "
+            "shared gene-chemical co-occurrences between its two possible enzyme "
+            "transformations, what is the PubChem CID of the heaviest by molecular weight?"
+        ),
+        "expected_answer": "4192",
+    },
+    {
+        "task_id": "de9887f5-ead8-4727-876f-5a4078f8598c",
+        "file": None,
+        "question": (
+            "What integer-rounded percentage of the total length of the harlequin shrimp "
+            "recorded in Omar Valencfia-Mendez 2017 paper was the sea star fed to the same type "
+            "of shrimp in G. Curt Fiedler's 2002 paper?"
+        ),
+        "expected_answer": "22",
+    },
+    {
+        "task_id": "983bba7c-c092-455f-b6c9-7857003d48fc",
+        "file": None,
+        "question": (
+            "What animals that were mentioned in both Ilias Lagkouvardos's and Olga Tapia's "
+            "papers on the alvei species of the genus named for Copenhagen outside the "
+            "bibliographies were also present in the 2021 article cited on the alvei species' "
+            "Wikipedia page about a multicenter, randomized, double-blind study?"
+        ),
+        "expected_answer": "mice",
+    },
+    {
+        "task_id": "9b54f9d9-35ee-4a14-b62f-d130ea00317f",
+        "file": "data/gaia/9b54f9d9-35ee-4a14-b62f-d130ea00317f.zip",
+        "question": (
+            "Which of the text elements under CATEGORIES in the XML would contain the one food "
+            "in the spreadsheet that does not appear a second time under a different name? (The "
+            "attached file is located at: data/gaia/9b54f9d9-35ee-4a14-b62f-d130ea00317f.zip)"
+        ),
+        "expected_answer": "Soups and Stews",
+    },
+    {
+        "task_id": "56db2318-640f-477a-a82f-bc93ad13e882",
+        "file": None,
+        "question": (
+            "The following numbers function similarly to ISBN 13 numbers, however, their "
+            "validation methods are slightly different. Rather than using alternate weights of 1 "
+            "and 3, the checksum digit is calculated with an alternate weight of 1 and some "
+            "other positive integer less than 10. Otherwise, the checksum digit is calculated as "
+            "expected. Unfortunately, there is an error in the data. Two adjacent columns have "
+            "been transposed. These errored columns do not involve the final column or one of "
+            "the first three columns. Using this information, please provide all potential "
+            "solutions with the unknown weight and the smaller index of the two errored columns "
+            "(assume we start our indexing at 0 and ignore hyphens). Give your answer in the "
+            "form x, y where x is the weight and y is the smaller index of the two transposed "
+            "columns.\n\n"
+            "978-354181391-9\n"
+            "978-946669746-1\n"
+            "978-398036139-6\n"
+            "978-447656680-4\n"
+            "978-279586664-7\n"
+            "978-595073693-3\n"
+            "978-976647652-6\n"
+            "978-591178125-5\n"
+            "978-728465924-5\n"
+            "978-414825155-9"
+        ),
+        "expected_answer": "7, 9",
+    },
+    {
+        "task_id": "8131e2c0-0083-4265-9ce7-78c2d568425d",
+        "file": None,
+        "question": (
+            "I was trying to remember how well the Cheater Beater performed in comparison to the "
+            "Cheater when James tested it on his channel. I know that the Cheater still "
+            "outperformed the Cheater Beater in terms of CFM. Could you please look that up for "
+            "me, and report the CFM of both the Cheater and the Cheater Beater? I'm not sure if "
+            "he made any changes to his testing, but this was back in season 4, so just report "
+            "the value from that season. Please format your response like this: CFM number for "
+            "Cheater, CFM number for Cheater beater"
+        ),
+        "expected_answer": "101.376, 84.348",
+    },
+    {
+        "task_id": "72c06643-a2fa-4186-aa5c-9ec33ae9b445",
+        "file": None,
+        "question": (
+            "What is the volume in milliliters of a system comprised of 0.312 kg Freon-12 "
+            "refrigerant when placed at the bottom of the Marianas Trench and allowed to "
+            "stabilize at the Trench's peak temperature, rounded to the nearest mL? Provide your "
+            "answer as just an integer value."
+        ),
+        "expected_answer": "55",
+    },
+]
+
 if __name__ == "__main__":
-    for i in [tasks[1]]:
+    for i in tasks:
         task_id = i["task_id"]
-        mas.set_log_path(f"results/llm_1/mas_log_{task_id}nigga.csv")
+        mas.set_log_path(f"results/llm_1/mas_log_{task_id}.csv")
         question = i["question"]
         expected = i["expected_answer"]
 

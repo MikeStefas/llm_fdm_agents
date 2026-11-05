@@ -47,7 +47,7 @@ def convert_file_to_markdown_and_read(path: str, task: str) -> str:
             temperature=0.0,
             extra_body={
                 "provider": {
-                    "order": ["DeepInfra"],
+                    "order": ["SiliconFlow"],
                     "allow_fallbacks": False,
                 }
             },

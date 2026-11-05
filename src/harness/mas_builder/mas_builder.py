@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from harness.mas_builder.finalizer import FinalizerNode
 from harness.orchestrators.base import BaseOrchestrator
+from harness.react_agents.base import BaseReactAgent
 
 
 class State(BaseModel):
@@ -22,10 +23,16 @@ class MultiAgentSystem:
         self,
         orchestrator: BaseOrchestrator,
         log_path: str,
+        subagents: Optional[list[BaseReactAgent]] = None,
         max_steps: int = 20,
     ):
         self.orchestrator = orchestrator
-        self.subagents = orchestrator.get_subagents()
+        self.subagents: list[BaseReactAgent] = []
+        if subagents is not None:
+            self.set_subagents(subagents)
+        elif orchestrator.has_subagents():
+            self.subagents = orchestrator.get_subagents()
+
         self.finalizer = FinalizerNode(log_path=log_path, llm_client=orchestrator.llm_client)
         self.max_steps = max_steps
 
@@ -33,7 +40,22 @@ class MultiAgentSystem:
         self.log_path = log_path
         self.set_log_path()
 
+    def set_subagents(self, subagents: list[BaseReactAgent]) -> None:
+        """Sets the subagents on the MAS and passes them to the orchestrator before building the graph."""
+        self.subagents = subagents
+        self.orchestrator.set_subagents(subagents)
+
     def build_graph(self):
+        if not self.subagents:
+            if self.orchestrator.has_subagents():
+                self.subagents = self.orchestrator.get_subagents()
+            else:
+                raise ValueError(
+                    "MultiAgentSystem has no subagents configured. "
+                    "Provide subagents in __init__ or call mas.set_subagents(subagents) before build_graph()."
+                )
+        self.orchestrator.ensure_has_subagents()
+
         self._create_orchestrator_node()
         self._create_all_subagent_nodes()
         self._create_finalizer_node()

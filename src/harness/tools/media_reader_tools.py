@@ -53,7 +53,7 @@ def ocr_image(
             reasoning_effort="none",
             extra_body={
                 "provider": {
-                    "order": ["DeepInfra"],
+                    "order": ["SiliconFlow"],
                     "allow_fallbacks": False,
                 }
             },
@@ -95,7 +95,7 @@ def inspect_image(
             reasoning_effort="none",
             extra_body={
                 "provider": {
-                    "order": ["DeepInfra"],
+                    "order": ["SiliconFlow"],
                     "allow_fallbacks": False,
                 }
             },

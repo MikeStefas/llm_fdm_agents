@@ -14,8 +14,8 @@ class LLMOrchestrator(BaseOrchestrator):
 
     def __init__(
         self,
-        subagents: list[BaseReactAgent],
         llm_client: ChatOpenAI,
+        subagents: Optional[list[BaseReactAgent]] = None,
         log_path: Optional[str] = None,
     ) -> None:
         super().__init__(
@@ -26,6 +26,7 @@ class LLMOrchestrator(BaseOrchestrator):
 
     @override
     def orchestrate(self, state: object) -> str:
+        self.ensure_has_subagents()
         if self.log_path is None:
             raise ValueError("log_path is not set. Call set_log_path() before orchestrating.")
         t_start = time.perf_counter()

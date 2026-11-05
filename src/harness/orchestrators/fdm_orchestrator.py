@@ -13,13 +13,13 @@ class FDMOrchestrator(BaseOrchestrator):
 
     def __init__(
         self,
-        subagents: list[BaseReactAgent],
         fdm_client: TypeSafeClient,
         llm_client: ChatOpenAI,
+        subagents: Optional[list[BaseReactAgent]] = None,
         log_path: Optional[str] = None,
     ) -> None:
         super().__init__(
-            subagents,
+            subagents=subagents,
             log_path=log_path,
             llm_client=llm_client,
             fdm_client=fdm_client,
@@ -27,6 +27,7 @@ class FDMOrchestrator(BaseOrchestrator):
 
     @override
     def orchestrate(self, state: object) -> str:
+        self.ensure_has_subagents()
         if self.log_path is None:
             raise ValueError("log_path is not set. Call set_log_path() before orchestrating.")
         t_start = time.perf_counter()

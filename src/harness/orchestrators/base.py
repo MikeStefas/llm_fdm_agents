@@ -32,17 +32,34 @@ class BaseOrchestrator(ABC):
 
     def __init__(
         self,
-        subagents: list[BaseReactAgent],
+        subagents: Optional[list[BaseReactAgent]] = None,
         log_path: Optional[str] = None,
         llm_client: Optional[ChatOpenAI] = None,
         fdm_client: Optional[TypeSafeClient] = None,
     ) -> None:
-        self.subagents = subagents
         self.log_path = log_path
         self.llm_client = llm_client
         self.fdm_client = fdm_client
+        self.subagents = []
+        self.agent_descriptions = {}
+        self.subagents_names = []
+        if subagents is not None:
+            self.set_subagents(subagents)
+
+    def set_subagents(self, subagents: list[BaseReactAgent]) -> None:
+        self.subagents = subagents
         self.agent_descriptions = {agent.subagent_name: agent.description for agent in self.subagents}
         self.subagents_names = [agent.subagent_name for agent in self.subagents]
+
+    def has_subagents(self) -> bool:
+        return bool(self.subagents)
+
+    def ensure_has_subagents(self) -> None:
+        if not self.has_subagents():
+            raise ValueError(
+                f"{self.__class__.__name__} has no subagents configured. "
+                "Call set_subagents() with a list of subagents before orchestrating."
+            )
 
     def set_log_path(self, log_path: str) -> None:
         self.log_path = log_path
