@@ -1,5 +1,6 @@
 import os
 import warnings
+import zipfile
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -9,7 +10,6 @@ from langchain_community.tools.file_management import (
     ReadFileTool,
 )
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
 
 from harness.utils.markitdown_config import shared_markitdown
 
@@ -19,14 +19,14 @@ read_file_tool = ReadFileTool()
 file_search_tool = FileSearchTool()
 list_directory_tool = ListDirectoryTool()
 
+
 @tool
-def convert_file_to_markdown_and_read(path: str, task: str) -> str:
-    """Converts almost any document, presentation, or spreadsheet (PDF, DOCX, PPTX, XLSX, CSV, HTML, etc.)
-    into clean, readable Markdown and analyzes it with the LLM.
+def convert_file_to_markdown(path: str) -> str:
+    """Converts a document, presentation, or spreadsheet (PDF, DOCX, PPTX, XLSX, CSV, HTML, XML, etc.)
+    directly into clean Markdown text and returns it.
 
     Args:
         path: Path to the target file.
-        task: Instruction or question about the document content.
     """
     if not os.path.exists(path):
         return f"Error: File '{path}' not found."
@@ -38,31 +38,47 @@ def convert_file_to_markdown_and_read(path: str, task: str) -> str:
     try:
         result = _markitdown_converter.convert(path)
         content = result.text_content or ""
-        content = content[:12000] if len(content) > 12000 else content
-
-        llm = ChatOpenAI(
-            model="qwen/qwen3.5-9b",
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-            base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
-            temperature=0.0,
-            extra_body={
-                "provider": {
-                    "order": ["SiliconFlow"],
-                    "allow_fallbacks": False,
-                }
-            },
-        )
-        llm_res = llm.invoke(f"{task}\n\n{content}")
-        return str(llm_res.content)
+        return content
     except Exception as e:
         return f"MarkItDown conversion failed for '{path}': {e}"
 
 
-convert_file_to_markdown = convert_file_to_markdown_and_read
+# Backward compatibility alias
+convert_file_to_markdown_and_read = convert_file_to_markdown
+
+
+@tool
+def unzip_file(zip_path: str, extract_to: str | None = None) -> str:
+    """Extracts a ZIP archive to a destination directory and returns the list of extracted files.
+
+    Args:
+        zip_path: Path to the ZIP file.
+        extract_to: Directory to extract into. If omitted, extracts to a directory named after the zip file.
+    """
+    if not os.path.exists(zip_path):
+        return f"Error: Zip file '{zip_path}' not found."
+    if not zipfile.is_zipfile(zip_path):
+        return f"Error: File '{zip_path}' is not a valid zip archive."
+
+    if extract_to is None:
+        extract_to = os.path.splitext(zip_path)[0]
+
+    os.makedirs(extract_to, exist_ok=True)
+    try:
+        with zipfile.ZipFile(zip_path, "r") as archive:
+            archive.extractall(extract_to)
+            extracted_files = archive.namelist()
+        return (
+            f"Successfully extracted {len(extracted_files)} files to '{extract_to}':\n"
+            + "\n".join(f"- {f}" for f in extracted_files)
+        )
+    except Exception as e:
+        return f"Failed to unzip '{zip_path}': {e}"
 
 
 DOC_READER_TOOLS = [
-    convert_file_to_markdown_and_read,
+    convert_file_to_markdown,
+    unzip_file,
     read_file_tool,
     file_search_tool,
     list_directory_tool,

@@ -20,7 +20,7 @@ class LLMReactAgent(BaseReactAgent):
         description: str,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 30,
+        max_iter: int = 10,
     ) -> None:
         super().__init__(
             subagent_name=subagent_name,
@@ -40,6 +40,7 @@ class LLMReactAgent(BaseReactAgent):
         final_res = None
         messages = self.prepare_messages(state)
         t_substep_start = time.perf_counter()
+        last_tool_input = None
 
         try:
             for i in range(self.max_iter):
@@ -49,7 +50,9 @@ class LLMReactAgent(BaseReactAgent):
                 step_tkns_out = 0
 
                 # llm decides next action/tool and args
+                t_api_start = time.perf_counter()
                 res = self.bound_llm.invoke(messages)
+                duration = time.perf_counter() - t_api_start
                 if res.usage_metadata:
                     step_tkns_in = res.usage_metadata["input_tokens"]
                     step_tkns_out = res.usage_metadata["output_tokens"]
@@ -57,7 +60,6 @@ class LLMReactAgent(BaseReactAgent):
                 # If no tool calls, this is the final natural response directly
                 if not res.tool_calls:
                     final_res = res
-                    duration = time.perf_counter() - t_substep_start
                     self.log_step(
                         substep_count=substep_count,
                         llm_tkns_in=step_tkns_in,
@@ -75,12 +77,13 @@ class LLMReactAgent(BaseReactAgent):
                 # Enforce single tool call!!!!
                 active_tool_call = res.tool_calls[0]
                 res.tool_calls = [active_tool_call]
-                messages.append(res) #log required tool
+                messages.append(res)  # log required tool
 
-                tool_msg, substep_error = self.execute_tool_call(active_tool_call)
-                messages.append(tool_msg) #log tool res
+                tool_msg, substep_error, last_tool_input, is_repeated = self.execute_tool_call(
+                    active_tool_call, last_input=last_tool_input
+                )
+                messages.append(tool_msg)  # log tool res
 
-                duration = time.perf_counter() - t_substep_start
                 step_response = res.content if res.content else str(tool_msg.content)
                 self.log_step(
                     substep_count=substep_count,

@@ -35,7 +35,7 @@ class FDMReactAgent(BaseReactAgent):
         fdm_client: TypeSafeClient,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 30,
+        max_iter: int = 10,
     ) -> None:
         super().__init__(
             subagent_name=subagent_name,
@@ -56,6 +56,7 @@ class FDMReactAgent(BaseReactAgent):
         final_res = None
         messages = self.prepare_messages(state)
         t_substep_start = time.perf_counter()
+        last_tool_input = None
 
         try:
             for i in range(self.max_iter):
@@ -67,18 +68,22 @@ class FDMReactAgent(BaseReactAgent):
                 step_llm_out = 0
 
                 # fdm decides next action and calc usage
+                t_fdm_start = time.perf_counter()
                 action, res = self._route(messages)
+                fdm_duration = time.perf_counter() - t_fdm_start
                 if res.usage is not None:
                     step_fdm_in += res.usage.input_tokens
                     step_fdm_out += res.usage.output_tokens
 
                 # If finish action, generate final response directly
                 if action.lower() in ["no tool call", "finish"]:
+                    t_llm_start = time.perf_counter()
                     final_res = self.llm_client.invoke(messages)
+                    llm_duration = time.perf_counter() - t_llm_start
                     if final_res.usage_metadata:
                         step_llm_in += final_res.usage_metadata["input_tokens"]
                         step_llm_out += final_res.usage_metadata["output_tokens"]
-                    duration = time.perf_counter() - t_substep_start
+                    duration = fdm_duration + llm_duration
                     self.log_step(
                         substep_count=substep_count,
                         llm_tkns_in=step_llm_in,
@@ -96,15 +101,18 @@ class FDMReactAgent(BaseReactAgent):
                 tool = self.tools_by_name[action]
 
                 # llm generates arguments for tool call and calc usage
+                t_llm_start = time.perf_counter()
                 arg_res = self._generate_args(messages, action)
+                llm_duration = time.perf_counter() - t_llm_start
                 if arg_res.usage_metadata:
                     step_llm_in += arg_res.usage_metadata["input_tokens"]
                     step_llm_out += arg_res.usage_metadata["output_tokens"]
 
+                duration = fdm_duration + llm_duration
+
                 # If no tool calls were produced by the LLM
                 if not arg_res.tool_calls:
                     substep_error = f"LLM did not produce arguments for chosen action '{action}'."
-                    duration = time.perf_counter() - t_substep_start
                     self.log_step(
                         substep_count=substep_count,
                         llm_tkns_in=step_llm_in,
@@ -128,12 +136,13 @@ class FDMReactAgent(BaseReactAgent):
                 # Single tool call!!!!
                 active_tool_call = arg_res.tool_calls[0]
                 arg_res.tool_calls = [active_tool_call]
-                messages.append(arg_res) # log required tool
+                messages.append(arg_res)  # log required tool
 
-                tool_msg, substep_error = self.execute_tool_call(active_tool_call)
-                messages.append(tool_msg) # log tool res
+                tool_msg, substep_error, last_tool_input, is_repeated = self.execute_tool_call(
+                    active_tool_call, last_input=last_tool_input
+                )
+                messages.append(tool_msg)  # log tool res
 
-                duration = time.perf_counter() - t_substep_start
                 step_response = arg_res.content if arg_res.content else str(tool_msg.content)
                 self.log_step(
                     substep_count=substep_count,
@@ -185,7 +194,8 @@ class FDMReactAgent(BaseReactAgent):
         """LLM generates arguments for tool call"""
         tool = self.tools_by_name[action]
         bound_llm = self.llm_client.bind_tools([tool], parallel_tool_calls=False)
-        prompt = list(state) + [HumanMessage(content=FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE.format(action=action))]
+        thought_msg = AIMessage(content=f"I will call tool '{action}' with the required arguments.")
+        prompt = list(state) + [thought_msg]
         return cast(AIMessage, bound_llm.invoke(prompt))
 
     def _get_criteria(self) -> dict[str, str]:

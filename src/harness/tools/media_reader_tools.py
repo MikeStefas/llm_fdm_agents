@@ -50,6 +50,8 @@ def ocr_image(
             base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             temperature=0.0,
             max_tokens=1024,
+            request_timeout=60.0,
+            max_retries=2,
             reasoning_effort="none",
             extra_body={
                 "provider": {
@@ -92,6 +94,8 @@ def inspect_image(
             base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
             temperature=0.0,
             max_tokens=1024,
+            request_timeout=60.0,
+            max_retries=2,
             reasoning_effort="none",
             extra_body={
                 "provider": {

@@ -37,7 +37,11 @@ llm_client_thinking_off = ChatOpenAI(
     temperature=0.0,
     max_tokens=4096,
     seed=42,
+    request_timeout=90.0,
+    max_retries=2,
     reasoning_effort="none",
+    frequency_penalty=0.3,
+    presence_penalty=0.3,
     extra_body=PINNED_PROVIDER_EXTRA_BODY,
 )
 
@@ -48,6 +52,10 @@ llm_client_thinking_on = ChatOpenAI(
     temperature=0.0,
     max_tokens=4096,
     seed=42,
+    request_timeout=90.0,
+    max_retries=2,
+    frequency_penalty=0.3,
+    presence_penalty=0.3,
     extra_body=PINNED_PROVIDER_EXTRA_BODY,
 )
 
@@ -57,6 +65,7 @@ fdm_client = DeterministicFDMClient(
     model=DEFAULT_FDM_MODEL,
     api_key=OPENROUTER_API_KEY,
     base_url=OPENROUTER_FDM_BASE_URL,
+    timeout=90.0,
 )
 
 __all__ = [

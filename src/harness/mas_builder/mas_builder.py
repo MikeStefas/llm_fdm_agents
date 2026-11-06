@@ -24,7 +24,7 @@ class MultiAgentSystem:
         orchestrator: BaseOrchestrator,
         log_path: str,
         subagents: Optional[list[BaseReactAgent]] = None,
-        max_steps: int = 20,
+        max_steps: int = 8,
     ):
         self.orchestrator = orchestrator
         self.subagents: list[BaseReactAgent] = []

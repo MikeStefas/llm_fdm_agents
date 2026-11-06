@@ -26,7 +26,7 @@ class BaseReactAgent(ABC):
         description: str,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 30,
+        max_iter: int = 10,
     ) -> None:
         self.subagent_name = subagent_name
         self.tools = tools
@@ -53,21 +53,48 @@ class BaseReactAgent(ABC):
             messages = [SystemMessage(content=self.system_prompt)] + messages
         return messages
 
-    def execute_tool_call(self, tool_call: dict) -> tuple[ToolMessage, str | None]:
+    def execute_tool_call(
+        self,
+        tool_call: dict,
+        last_input: tuple[str, str] | None = None,
+    ) -> tuple[ToolMessage, str | None, tuple[str, str], bool]:
+        """Executes a tool call with built-in consecutive loop detection.
+
+        Returns:
+            (ToolMessage, error_str, current_input, is_repeated)
+        """
+        import json
+
         name = str(tool_call["name"])
         tool_call_id = str(tool_call["id"])
+        args = tool_call["args"]
+        current_input = (name, json.dumps(args, sort_keys=True))
+
+        # Loop  skip if repeated consecutively with same args. qwen with tmp = 0 will just repeat.
+        if current_input == last_input:
+            warn_msg = (
+                f"Error: You just called tool '{name}' with identical arguments {args} "
+                f"and received that exact result. Do NOT call '{name}' with these same arguments again. "
+                "Either use different arguments, try a different tool, or finish by outputting no tool call."
+            )
+            return (
+                ToolMessage(content=warn_msg, tool_call_id=tool_call_id),
+                "Skipped duplicate consecutive tool call.",
+                current_input,
+                True,
+            )
 
         if name not in self.tools_by_name:
             err = f"Tool Error: Tool '{name}' not found."
-            return ToolMessage(content=err, tool_call_id=tool_call_id), err
+            return ToolMessage(content=err, tool_call_id=tool_call_id), err, current_input, False
 
         tool = self.tools_by_name[name]
         try:
-            observation = tool.invoke(tool_call["args"])
-            return ToolMessage(content=str(observation), tool_call_id=tool_call_id), None
+            observation = tool.invoke(args)
+            return ToolMessage(content=str(observation), tool_call_id=tool_call_id), None, current_input, False
         except Exception as e:
             err = f"Tool Error ({name}): {str(e)}"
-            return ToolMessage(content=err, tool_call_id=tool_call_id), err
+            return ToolMessage(content=err, tool_call_id=tool_call_id), err, current_input, False
 
     def synthesize_fallback(
         self,
@@ -76,7 +103,6 @@ class BaseReactAgent(ABC):
         state_step: int = 0,
         task_id: str | None = None,
     ) -> str:
-        t_substep_start = time.perf_counter()
         messages.append(
             HumanMessage(
                 content="You have reached the maximum number of tool iterations. "
@@ -84,14 +110,14 @@ class BaseReactAgent(ABC):
                 "provide your best answer in plain text based on the observations."
             )
         )
+        t_api_start = time.perf_counter()
         final_res = self.llm_client.invoke(messages)
+        duration = time.perf_counter() - t_api_start
         step_tkns_in = 0
         step_tkns_out = 0
         if final_res.usage_metadata:
             step_tkns_in = final_res.usage_metadata["input_tokens"]
             step_tkns_out = final_res.usage_metadata["output_tokens"]
-
-        duration = time.perf_counter() - t_substep_start
         output_text = str(final_res.content)
         self.log_step(
             substep_count=substep_count,

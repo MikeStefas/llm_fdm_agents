@@ -2,9 +2,11 @@ from harness.tools.code_tools import CODE_TOOLS, python_ast_repl, python_repl, s
 from harness.tools.doc_reader_tools import (
     DOC_READER_TOOLS,
     convert_file_to_markdown,
+    convert_file_to_markdown_and_read,
     file_search_tool,
     list_directory_tool,
     read_file_tool,
+    unzip_file,
 )
 from harness.tools.media_reader_tools import (
     MEDIA_READER_TOOLS,
@@ -34,6 +36,8 @@ __all__ = [
     "readable_webpage",
     "file_from_url",
     "convert_file_to_markdown",
+    "convert_file_to_markdown_and_read",
+    "unzip_file",
     "read_file_tool",
     "file_search_tool",
     "list_directory_tool",
