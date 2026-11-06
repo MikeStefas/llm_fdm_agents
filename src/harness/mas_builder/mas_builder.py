@@ -12,7 +12,7 @@ from harness.react_agents.base import BaseReactAgent
 
 class State(BaseModel):
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
-    state_step: int = 0
+    state_step: int = 1
     next_subagent: Optional[str] = None
     subagent_prompt: Optional[str] = None
     task_id: Optional[str] = None
