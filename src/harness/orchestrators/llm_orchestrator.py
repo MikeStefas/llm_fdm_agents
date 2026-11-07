@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import print_state_to_console_and_md
 from harness.utils.prompts import FINALIZER_OPTION_DESCRIPTION, LLM_ORCHESTRATOR_SYSTEM_PROMPT
 
 
@@ -43,16 +44,7 @@ class LLMOrchestrator(BaseOrchestrator):
             )),
             HumanMessage(content=state_text)
         ])
-        print("LLM ORCHESTRATION")
-        print("#"*80)
-        print("State passed to orch: ")
-        print(state_text)
-        print("#"*80)
-        print("Instructions:")
-        print(LLM_ORCHESTRATOR_SYSTEM_PROMPT.format(
-             available_options=json.dumps(available_options)
-         ))
-        print("#"*80)
+       
         t_end = time.perf_counter()
         
         decision = str(res.content).strip().strip("'\"").lower()
@@ -65,4 +57,15 @@ class LLMOrchestrator(BaseOrchestrator):
 
         step_val = state.state_step
         self.log_step(step_val, decision, res, t_end - t_start, error, task_id=task_id)
+
+        prompt_text = (
+            f"System Prompt:\n{LLM_ORCHESTRATOR_SYSTEM_PROMPT.format(available_options=json.dumps(available_options))}\n\n"
+            f"Human Message / State:\n{state_text}"
+        )
+        print_state_to_console_and_md(
+            log_path=self.log_path,
+            title="llm orch",
+            input_text=prompt_text,
+            output_text=decision,
+        )
         return decision

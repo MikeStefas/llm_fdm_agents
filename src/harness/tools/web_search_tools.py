@@ -1,7 +1,6 @@
 import os
 import tempfile
 import warnings
-import urllib.request
 import requests
 import wikipedia
 from ddg import Duckduckgo

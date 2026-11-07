@@ -5,7 +5,7 @@ from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 
 from langchain_openai import ChatOpenAI
 
-from harness.utils.logger import append_to_csv
+from harness.utils.logger import append_to_csv, print_state_to_console_and_md
 from harness.utils.prompts import (
     FINALIZER_TASK_PROMPT_TEMPLATE,
     GAIA_FINALIZER_PROMPT,
@@ -65,6 +65,12 @@ class FinalizerNode:
                 response=output_text,
                 error=None,
                 task_id=task_id,
+            )
+            print_state_to_console_and_md(
+                log_path=self.log_path,
+                title="finalizer",
+                input_text=f"System Prompt:\n{self.system_prompt}\n\nTask:\n{FINALIZER_TASK_PROMPT_TEMPLATE.format(past_conversation=past_conversation)}",
+                output_text=output_text,
             )
             return output_text
         except Exception as e:

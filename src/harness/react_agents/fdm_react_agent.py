@@ -1,4 +1,3 @@
-import json
 import time
 from typing import Optional, cast
 from typing_extensions import override
@@ -6,19 +5,17 @@ from langchain_core.messages import (
     AIMessage,
     BaseMessage,
     HumanMessage,
-    SystemMessage,
-    ToolMessage,
 )
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
 
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import print_state_to_console_and_md
 from harness.utils.prompts import (
     FDM_REACT_FINISH_ACTION,
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,
-    FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE,
 )
 
 
@@ -75,6 +72,18 @@ class FDMReactAgent(BaseReactAgent):
                     step_fdm_in += res.usage.input_tokens
                     step_fdm_out += res.usage.output_tokens
 
+                route_input = (
+                    f"State:\n{self.state_to_text(messages)}\n\n"
+                    f"Instructions:\n{FDM_REACT_INSTRUCTIONS_TEMPLATE.format(tools=list(self.criteria.keys()))}\n\n"
+                    f"Criteria:\n{self.criteria}"
+                )
+                print_state_to_console_and_md(
+                    log_path=self.log_path,
+                    title=f"fdm subagent routing ({self.subagent_name})",
+                    input_text=route_input,
+                    output_text=action,
+                )
+
                 # If finish action, generate final response directly
                 if action.lower() in ["no tool call", "finish"]:
                     t_llm_start = time.perf_counter()
@@ -103,6 +112,12 @@ class FDMReactAgent(BaseReactAgent):
                         state_step=state_step,
                         task_id=task_id,
                     )
+                    print_state_to_console_and_md(
+                        log_path=self.log_path,
+                        title=f"fdm subagent llm summary ({self.subagent_name})",
+                        input_text=self.state_to_text(finish_prompt),
+                        output_text=str(final_res.content),
+                    )
                     break
 
                 tool = self.tools_by_name[action]
@@ -114,6 +129,19 @@ class FDMReactAgent(BaseReactAgent):
                 if arg_res.usage_metadata:
                     step_llm_in += arg_res.usage_metadata["input_tokens"]
                     step_llm_out += arg_res.usage_metadata["output_tokens"]
+
+                args_output = (
+                    f"Tool Calls: {arg_res.tool_calls}"
+                    if arg_res.tool_calls
+                    else f"Content: {arg_res.content}"
+                )
+                args_input_text = f"Action: {action}\nMessages:\n{self.state_to_text(messages)}"
+                print_state_to_console_and_md(
+                    log_path=self.log_path,
+                    title=f"fdm subagent llm args ({self.subagent_name})",
+                    input_text=args_input_text,
+                    output_text=args_output,
+                )
 
                 duration = fdm_duration + llm_duration
 

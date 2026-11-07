@@ -2,12 +2,13 @@ import json
 import time
 from typing import Optional
 from typing_extensions import override
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import BaseMessage
 from langchain_core.runnables import Runnable
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import print_state_to_console_and_md
 
 
 class LLMReactAgent(BaseReactAgent):
@@ -72,6 +73,12 @@ class LLMReactAgent(BaseReactAgent):
                         state_step=state_step,
                         task_id=task_id,
                     )
+                    print_state_to_console_and_md(
+                        log_path=self.log_path,
+                        title=f"llm subagent ({self.subagent_name})",
+                        input_text=self.state_to_text(messages),
+                        output_text=str(res.content),
+                    )
                     break
 
                 # Enforce single tool call!!!!
@@ -98,6 +105,12 @@ class LLMReactAgent(BaseReactAgent):
                     error=substep_error,
                     state_step=state_step,
                     task_id=task_id,
+                )
+                print_state_to_console_and_md(
+                    log_path=self.log_path,
+                    title=f"llm subagent ({self.subagent_name})",
+                    input_text=self.state_to_text(messages[:-2]),  # messages before adding res and tool_msg
+                    output_text=f"Tool: {active_tool_call['name']}\nArgs: {json.dumps(active_tool_call['args'])}\nObservation: {tool_msg.content}",
                 )
 
             # max_iter num surpassed so conclude

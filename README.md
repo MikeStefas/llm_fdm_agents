@@ -1,42 +1,45 @@
+# Getting Started
 
-## Start
+Follow these steps to run the benchmark on your machine:
 
-1. **Environment Setup**:
-   ```bash
-   cp example.env .env
-   ```
-   Ensure local servers (Ollama & FDM) are running and models are available. (Will be fixed once the repo is dockerised)
-
-2. **Run graph experiment**:
-   ```bash
-   python src/harness/experiments/graphbuilder.py
-   ```
+### 1. Prerequisites
+- **Python >= 3.11**
+- **[uv](https://docs.astral.sh/uv/)** package manager
+- **[Docker](https://www.docker.com/)** (daemon must be running)
 
 ---
 
-## Project Structure (`src/harness`)
+### 2. Configure Environment
+Copy the example environment file and add your OpenRouter API key:
+```bash
+cp example.env .env
+```
+Open `.env` and set:
+```env
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+```
 
-- **`config.py`**: Loads `.env` variables (models, server endpoints, and log paths).
+---
 
-- **`orchestrators/`**: Multi-agent routing strategies:
-  - `base.py`: `BaseOrchestrator` abstract class and decision schemas.
-  - `llm_orchestrator.py`: Direct LLM subagent selection.
-  - `fdm_orchestrator.py`: FDM (system-1) fast routing.
-  - `llm_routed_llm_prompted.py`: LLM routes subagent + LLM generates prompt instructions.
-  - `fdm_routed_llm_prompted.py`: FDM routes subagent + LLM generates prompt instructions.
-- **`react_agents/`**: ReAct subagent implementations:
-  - `base.py`: `BaseReactAgent` base class with tool-execution loop and logging.
-  - `llm_react_agent.py`: Tool-calling agent powered by LLM.
-  - `fdm_react_agent.py`: Tool-calling agent powered by FDM decisions.
-- **`tools/`**: Domain toolkits for subagents.
-- **`mas_builder/`**:
-  - `mas_builder.py`: LangGraph StateGraph wiring orchestrators, subagents, and finalizer.
-  - `finalizer.py`: `FinalizerNode` for benchmark task synthesis and logging.
-- **`utils/`**: Shared utilities, prompts, logging, and LLM configuration.
+### 3. Build the Docker Sandbox Image
+Build the isolated container sandbox used by the code execution and bash tools:
+```bash
+docker build -t gaia-sandbox -f Dockerfile.sandbox .
+```
 
-## Root Files
+---
 
-- `main.py`: Entrypoint for running workflows.
-- `initialised_subagents.py`: Pre-configured subagent instances.
-- `initialised_orchs.py`: Pre-configured orchestrator instances.
-- `states.py`: LangGraph state schemas.
+### 4. Install Dependencies
+Sync and install the project virtual environment:
+```bash
+uv sync
+```
+
+---
+
+### 5. Run
+Execute the benchmark:
+```bash
+uv run python main.py
+```
+*(You can select which configuration to run by changing `active_conf_id = 1` through `6` inside `main.py`)*

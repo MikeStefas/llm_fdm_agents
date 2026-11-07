@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 from typesafe_sdk import Choice, TypeSafeClient
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
+from harness.utils import print_state_to_console_and_md
 from harness.utils.prompts import FDM_ORCHESTRATOR_INSTRUCTIONS, FINALIZER_OPTION_DESCRIPTION
 
 
@@ -45,17 +46,7 @@ class FDMOrchestrator(BaseOrchestrator):
                 )
             },
         )
-        print("FDM ORCHESTRATION")
-        print("#"*80)
-        print("State passed to orch: ")
-        print(self.state_to_text(state))
-        print("instructions:")
-        print(FDM_ORCHESTRATOR_INSTRUCTIONS)
-        print("#"*80)
-        print("choices:")
-        print(available_options)
-        print("#"*80)
-        # print(res)
+   
         t_end = time.perf_counter()
 
         decision = str(res.answers["next_subagent"].choice).strip().strip("'\"").lower()
@@ -68,4 +59,16 @@ class FDMOrchestrator(BaseOrchestrator):
 
         step_val = state.state_step
         self.log_step(step_val, decision, res, t_end - t_start, error, task_id=task_id)
+
+        input_text = (
+            f"State:\n{self.state_to_text(state)}\n\n"
+            f"Instructions:\n{FDM_ORCHESTRATOR_INSTRUCTIONS}\n\n"
+            f"Available options:\n{available_options}"
+        )
+        print_state_to_console_and_md(
+            log_path=self.log_path,
+            title="fdm orch",
+            input_text=input_text,
+            output_text=decision,
+        )
         return decision

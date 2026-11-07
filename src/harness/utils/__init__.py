@@ -5,13 +5,12 @@ from harness.utils.descriptions import (
     WEB_SEARCH_DESCRIPTION,
 )
 from harness.utils.fdm_client import DeterministicFDMClient
-from harness.utils.logger import LOG_FIELDNAMES, append_to_csv
+from harness.utils.logger import LOG_FIELDNAMES, append_to_csv, print_state_to_console_and_md
 from harness.utils.prompts import (
     FDM_ORCHESTRATOR_INSTRUCTIONS,
     FDM_REACT_FINISH_ACTION,
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,
-    FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE,
     FDM_ROUTED_LLM_PROMPTED_ROUTING_INSTRUCTIONS,
     FDM_ROUTED_LLM_PROMPTED_SUBAGENT_PROMPT_TEMPLATE,
     FINALIZER_OPTION_DESCRIPTION,
@@ -44,6 +43,7 @@ __all__ = [
     # Logger
     "LOG_FIELDNAMES",
     "append_to_csv",
+    "print_state_to_console_and_md",
     # Descriptions
     "WEB_SEARCH_DESCRIPTION",
     "DOC_READER_DESCRIPTION",
@@ -61,7 +61,6 @@ __all__ = [
     "FDM_ROUTED_LLM_PROMPTED_ROUTING_INSTRUCTIONS",
     "FDM_ROUTED_LLM_PROMPTED_SUBAGENT_PROMPT_TEMPLATE",
     "FDM_REACT_INSTRUCTIONS_TEMPLATE",
-    "FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE",
     "FDM_REACT_FINISH_DESCRIPTION",
     "state_to_text",
     # Scorer

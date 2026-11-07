@@ -5,7 +5,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, To
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
 from harness.utils.prompts import get_subagent_system_prompt, state_to_text
-from harness.utils import append_to_csv
+from harness.utils import append_to_csv, print_state_to_console_and_md
 
 
 class BaseReactAgent(ABC):
@@ -130,6 +130,12 @@ class BaseReactAgent(ABC):
             error=None,
             state_step=state_step,
             task_id=task_id,
+        )
+        print_state_to_console_and_md(
+            log_path=self.log_path,
+            title=f"llm subagent fallback ({self.subagent_name})",
+            input_text=self.state_to_text(messages),
+            output_text=output_text,
         )
         return output_text
 

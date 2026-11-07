@@ -3,8 +3,6 @@ FDM_REACT_INSTRUCTIONS_TEMPLATE = (
     "Choose one of the available tools ({tools}) to inspect or compute data, or choose 'no tool call' if you have gathered enough information to finish."
 )
 
-FDM_REACT_TOOL_ARGS_PROMPT_TEMPLATE = "Call the tool '{action}' with the required arguments."
-
 FDM_REACT_FINISH_ACTION = "no tool call"
 FDM_REACT_FINISH_DESCRIPTION = "Choose 'no tool call' when you are done and ready to conclude without invoking any more tools"
 
