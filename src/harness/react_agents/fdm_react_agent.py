@@ -78,7 +78,14 @@ class FDMReactAgent(BaseReactAgent):
                 # If finish action, generate final response directly
                 if action.lower() in ["no tool call", "finish"]:
                     t_llm_start = time.perf_counter()
-                    final_res = self.llm_client.invoke(messages)
+                    finish_prompt = list(messages) + [
+                        HumanMessage(
+                            content="You have gathered the necessary observations. "
+                            "Please provide a concise bulleted summary of your findings (max 4-5 bullet points) in plain text based on the observations above. "
+                            "Do NOT output internal monologue or call any tools."
+                        )
+                    ]
+                    final_res = self.llm_client.invoke(finish_prompt, tool_choice="none")
                     llm_duration = time.perf_counter() - t_llm_start
                     if final_res.usage_metadata:
                         step_llm_in += final_res.usage_metadata["input_tokens"]

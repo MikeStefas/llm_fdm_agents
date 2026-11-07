@@ -71,7 +71,7 @@ graph = mas.build_graph()
 
 import json
 
-with open("tasks_l2_20.json", "r") as f:
+with open("tasks_benchmark_20.json", "r") as f:
     tasks = json.load(f)
 
 if __name__ == "__main__":

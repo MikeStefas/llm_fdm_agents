@@ -43,6 +43,16 @@ class LLMOrchestrator(BaseOrchestrator):
             )),
             HumanMessage(content=state_text)
         ])
+        print("LLM ORCHESTRATION")
+        print("#"*80)
+        print("State passed to orch: ")
+        print(state_text)
+        print("#"*80)
+        print("Instructions:")
+        print(LLM_ORCHESTRATOR_SYSTEM_PROMPT.format(
+             available_options=json.dumps(available_options)
+         ))
+        print("#"*80)
         t_end = time.perf_counter()
         
         decision = str(res.content).strip().strip("'\"").lower()

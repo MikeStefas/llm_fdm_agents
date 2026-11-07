@@ -106,12 +106,12 @@ class BaseReactAgent(ABC):
         messages.append(
             HumanMessage(
                 content="You have reached the maximum number of tool iterations. "
-                "Do NOT call any more tools. Please synthesize the findings above and "
-                "provide your best answer in plain text based on the observations."
+                "Do NOT call any more tools. Please provide a concise bulleted summary of your findings (max 4-5 bullet points) "
+                "in plain text based on the observations above."
             )
         )
         t_api_start = time.perf_counter()
-        final_res = self.llm_client.invoke(messages)
+        final_res = self.llm_client.invoke(messages, tool_choice="none")
         duration = time.perf_counter() - t_api_start
         step_tkns_in = 0
         step_tkns_out = 0

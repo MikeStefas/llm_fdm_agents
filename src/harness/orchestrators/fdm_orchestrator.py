@@ -45,6 +45,17 @@ class FDMOrchestrator(BaseOrchestrator):
                 )
             },
         )
+        print("FDM ORCHESTRATION")
+        print("#"*80)
+        print("State passed to orch: ")
+        print(self.state_to_text(state))
+        print("instructions:")
+        print(FDM_ORCHESTRATOR_INSTRUCTIONS)
+        print("#"*80)
+        print("choices:")
+        print(available_options)
+        print("#"*80)
+        # print(res)
         t_end = time.perf_counter()
 
         decision = str(res.answers["next_subagent"].choice).strip().strip("'\"").lower()
