@@ -1,7 +1,6 @@
 import time
 from typing import Optional
 from typing_extensions import override
-from langchain_openai import ChatOpenAI
 from typesafe_sdk import Choice, TypeSafeClient
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
@@ -15,14 +14,13 @@ class FDMOrchestrator(BaseOrchestrator):
     def __init__(
         self,
         fdm_client: TypeSafeClient,
-        llm_client: ChatOpenAI,
         subagents: Optional[list[BaseReactAgent]] = None,
         log_path: Optional[str] = None,
     ) -> None:
         super().__init__(
             subagents=subagents,
             log_path=log_path,
-            llm_client=llm_client,
+            llm_client=None,
             fdm_client=fdm_client,
         )
 

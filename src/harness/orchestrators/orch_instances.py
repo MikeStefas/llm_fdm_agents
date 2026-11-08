@@ -24,13 +24,11 @@ llm_orchestrator_thinking_on = LLMOrchestrator(
 
 fdm_orchestrator_thinking_off = FDMOrchestrator(
     fdm_client=fdm_client,
-    llm_client=llm_client_thinking_off,
     subagents=fdm_subagents_thinking_off,
 )
 
 fdm_orchestrator_thinking_on = FDMOrchestrator(
     fdm_client=fdm_client,
-    llm_client=llm_client_thinking_on,
     subagents=fdm_subagents_thinking_on,
 )
 

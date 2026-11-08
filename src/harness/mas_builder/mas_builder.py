@@ -33,7 +33,14 @@ class MultiAgentSystem:
         elif orchestrator.has_subagents():
             self.subagents = orchestrator.get_subagents()
 
-        self.finalizer = FinalizerNode(log_path=log_path, llm_client=orchestrator.llm_client)
+        final_llm = orchestrator.llm_client
+        if final_llm is None and self.subagents:
+            final_llm = self.subagents[0].llm_client
+        if final_llm is None:
+            from config import llm_client
+            final_llm = llm_client
+
+        self.finalizer = FinalizerNode(log_path=log_path, llm_client=final_llm)
         self.max_steps = max_steps
 
         self.builder = StateGraph(State)
