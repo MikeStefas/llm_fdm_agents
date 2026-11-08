@@ -25,6 +25,9 @@ class FinalizerNode:
     ) -> None:
         self.system_prompt = GAIA_FINALIZER_PROMPT
         self.log_path = log_path
+        if llm_client is None:
+            from config import finalizer_llm_client
+            llm_client = finalizer_llm_client
         self.llm_client = llm_client
 
     def set_log_path(self, log_path: str) -> None:

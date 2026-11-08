@@ -1,6 +1,7 @@
 from typing import Annotated, Optional
 
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
+from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
@@ -24,6 +25,7 @@ class MultiAgentSystem:
         orchestrator: BaseOrchestrator,
         log_path: str,
         subagents: Optional[list[BaseReactAgent]] = None,
+        finalizer_llm_client: Optional[ChatOpenAI] = None,
         max_steps: int = 8,
     ):
         self.orchestrator = orchestrator
@@ -33,14 +35,10 @@ class MultiAgentSystem:
         elif orchestrator.has_subagents():
             self.subagents = orchestrator.get_subagents()
 
-        final_llm = orchestrator.llm_client
-        if final_llm is None and self.subagents:
-            final_llm = self.subagents[0].llm_client
-        if final_llm is None:
-            from config import llm_client
-            final_llm = llm_client
-
-        self.finalizer = FinalizerNode(log_path=log_path, llm_client=final_llm)
+        self.finalizer = FinalizerNode(
+            log_path=log_path,
+            llm_client=finalizer_llm_client,
+        )
         self.max_steps = max_steps
 
         self.builder = StateGraph(State)
