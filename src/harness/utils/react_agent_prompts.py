@@ -49,7 +49,7 @@ How to finish:
 What you MUST do:
 - Formulate CONCISE keyword search queries (3 to 6 keywords). Focus strictly on key entities, proper nouns, species names, report titles, or specific phrases.
 - AVOID searching with long full-sentence questions or narrative paragraphs; search engines need concise keywords.
-- When search results provide page links, use convert_webpage_to_markdown (or readable_webpage) on the most relevant URL to inspect the full text and data tables.
+- When search results provide page links, use readable_webpage on the most relevant URL to inspect the full text and data tables.
 - Report exact quotes, specific numbers, dates, titles, and factual observations found from search results.
 - When you have found the required facts, or if repeated searches yield no new results, DO NOT call any more tools (output no tool call). Finish by providing your concise findings directly so the orchestrator can route to the next agent.
 

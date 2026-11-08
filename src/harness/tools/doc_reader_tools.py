@@ -21,7 +21,7 @@ list_directory_tool = ListDirectoryTool()
 
 
 @tool
-def convert_file_to_markdown(path: str) -> str:
+def convert_file_to_markdown_and_read(path: str) -> str:
     """Converts a document, presentation, or spreadsheet (PDF, DOCX, PPTX, XLSX, CSV, HTML, XML, etc.)
     directly into clean Markdown text and returns it.
 
@@ -43,8 +43,6 @@ def convert_file_to_markdown(path: str) -> str:
         return f"MarkItDown conversion failed for '{path}': {e}"
 
 
-# Backward compatibility alias
-convert_file_to_markdown_and_read = convert_file_to_markdown
 
 
 @tool
@@ -77,7 +75,7 @@ def unzip_file(zip_path: str, extract_to: str | None = None) -> str:
 
 
 DOC_READER_TOOLS = [
-    convert_file_to_markdown,
+    convert_file_to_markdown_and_read,
     unzip_file,
     read_file_tool,
     file_search_tool,
