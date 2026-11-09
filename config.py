@@ -16,9 +16,11 @@ DEFAULT_FDM_MODEL = "cloudflare/clef-flash"
 LOCAL_LLAMACPP_BASE_URL = "http://127.0.0.1:8080/v1"
 LOCAL_LLAMACPP_MODEL = "/home/mike/.lmstudio/models/LiquidAI/LFM3-1.7B-GGUF/LFM3-1.7B-Q4_K_M.gguf"
 
+PINNED_PROVIDER = "DeepInfra"
+
 PINNED_PROVIDER_EXTRA_BODY = {
     "provider": {
-        "order": ["SiliconFlow"],
+        "order": [PINNED_PROVIDER],
         "allow_fallbacks": False,
     }
 }
@@ -29,7 +31,11 @@ class DeterministicFDMClient(TypeSafeClient):
         return super().system_one(
             state=state,
             questions=questions,
-            extra_body={"temperature": 0.0, "seed": 42},
+            extra_body={
+                "temperature": 0.0,
+                "seed": 42,
+                **PINNED_PROVIDER_EXTRA_BODY,
+            },
         )
 
 
@@ -103,6 +109,7 @@ __all__ = [
     "DEFAULT_FDM_MODEL",
     "LOCAL_LLAMACPP_BASE_URL",
     "LOCAL_LLAMACPP_MODEL",
+    "PINNED_PROVIDER",
     "PINNED_PROVIDER_EXTRA_BODY",
     "DeterministicFDMClient",
     "llm_client",

@@ -55,7 +55,7 @@ def print_state_to_console_and_md(
         f"**Output:**\n```\n{output_text.strip()}\n```\n\n"
         f"---\n"
     )
-#    print(entry)
+    #print(entry)
 
     if log_path:
         if log_path.endswith(".csv"):

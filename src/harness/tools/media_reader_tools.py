@@ -11,6 +11,7 @@ import pydub
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
 from harness.utils.vcr_config import my_vcr
+from config import PINNED_PROVIDER_EXTRA_BODY
 
 
 def convert_to_base64(file_path: str, max_dimension: int = 768) -> str:
@@ -53,12 +54,7 @@ def ocr_image(
             request_timeout=60.0,
             max_retries=2,
             reasoning_effort="none",
-            extra_body={
-                "provider": {
-                    "order": ["SiliconFlow"],
-                    "allow_fallbacks": False,
-                }
-            },
+            extra_body=PINNED_PROVIDER_EXTRA_BODY,
         )
         message = HumanMessage(
             content=[
@@ -97,12 +93,7 @@ def inspect_image(
             request_timeout=60.0,
             max_retries=2,
             reasoning_effort="none",
-            extra_body={
-                "provider": {
-                    "order": ["SiliconFlow"],
-                    "allow_fallbacks": False,
-                }
-            },
+            extra_body=PINNED_PROVIDER_EXTRA_BODY,
         )
         message = HumanMessage(
             content=[
