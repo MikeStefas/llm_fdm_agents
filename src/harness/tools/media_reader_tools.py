@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
 import os
-
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -9,6 +8,7 @@ import numpy as np
 from PIL import Image
 import pydub
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
+from langchain_community.document_loaders import YoutubeLoader
 
 from harness.utils.vcr_config import my_vcr
 from config import PINNED_PROVIDER_EXTRA_BODY
@@ -147,8 +147,34 @@ def transcribe_audio(path: str) -> str:
         return f"Error transcribing audio '{path}': {e}"
 
 
+@tool
+@my_vcr.use_cassette("youtube_transcript.yaml")
+def get_youtube_transcript(url: str) -> str:
+    """Fetches the official or auto-generated subtitle/transcript text of a YouTube video URL using LangChain's YoutubeLoader.
+
+    Args:
+        url: Full YouTube video URL (e.g. 'https://www.youtube.com/watch?v=...').
+    """
+    try:
+
+        loader = YoutubeLoader.from_youtube_url(
+            url.strip(),
+            add_video_info=False,
+            language=["en", "en-US", "en-GB", "el", "auto"],
+        )
+        docs = loader.load()
+        if not docs or not docs[0].page_content.strip():
+            return "No transcript or captions available for this YouTube video."
+        return f"YouTube Transcript: {docs[0].page_content[:4000]}"
+    except Exception as e:
+        return f"Could not retrieve YouTube transcript for '{url}': {e}"
+
+
+
+
 MEDIA_READER_TOOLS = [
     ocr_image,
     inspect_image,
     transcribe_audio,
+    get_youtube_transcript,
 ]

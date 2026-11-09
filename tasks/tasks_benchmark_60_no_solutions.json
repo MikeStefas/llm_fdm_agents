@@ -87,7 +87,7 @@
     "task_id": "f918266a-b3e0-4914-865d-4faa564f1aef",
     "level": 1,
     "file": "data/gaia/f918266a-b3e0-4914-865d-4faa564f1aef.py",
-    "question": "What is the final numeric output from the attached Python code? (The attached file is located at: data/gaia/f918266a-b3e0-4914-865d-4faa564f1aef.py)"
+    "question": "What is the final numeric output from the attached Python code?"
   },
   {
     "task_id": "a1e91b78-d3d8-4675-bb8d-62741b4b68a6",
@@ -105,13 +105,13 @@
     "task_id": "a3fbeb63-0e8c-4a11-bff6-0e3b484c3e9c",
     "level": 1,
     "file": "data/gaia/a3fbeb63-0e8c-4a11-bff6-0e3b484c3e9c.pptx",
-    "question": "How many slides in this PowerPoint presentation mention crustaceans? (The attached file is located at: data/gaia/a3fbeb63-0e8c-4a11-bff6-0e3b484c3e9c.pptx)"
+    "question": "How many slides in this PowerPoint presentation mention crustaceans?"
   },
   {
     "task_id": "1f975693-876d-457b-a649-393859e79bf3",
     "level": 1,
     "file": "data/gaia/1f975693-876d-457b-a649-393859e79bf3.mp3",
-    "question": "Hi, I was out sick from my classes on Friday, so I'm trying to figure out what I need to study for my Calculus mid-term next week. My friend from class sent me an audio recording of Professor Willowbrook giving out the recommended reading for the test, but my headphones are broken :(\n\nCould you please listen to the recording for me and tell me the page numbers I'm supposed to go over? I've attached a file called Homework.mp3 that has the recording. Please provide just the page numbers as a comma-delimited list. And please provide the list in ascending order. (The attached file is located at: data/gaia/1f975693-876d-457b-a649-393859e79bf3.mp3)"
+    "question": "Hi, I was out sick from my classes on Friday, so I'm trying to figure out what I need to study for my Calculus mid-term next week. My friend from class sent me an audio recording of Professor Willowbrook giving out the recommended reading for the test, but my headphones are broken :(\n\nCould you please listen to the recording for me and tell me the page numbers I'm supposed to go over? I've attached a file called Homework.mp3 that has the recording. Please provide just the page numbers as a comma-delimited list. And please provide the list in ascending order."
   },
   {
     "task_id": "0383a3ee-47a7-41a4-b493-519bdefe0488",
@@ -135,19 +135,19 @@
     "task_id": "5cfb274c-0207-4aa7-9575-6ac0bd95d9b2",
     "level": 1,
     "file": "data/gaia/5cfb274c-0207-4aa7-9575-6ac0bd95d9b2.xlsx",
-    "question": "Each cell in the attached spreadsheet represents a plot of land. The color of the cell indicates who owns that plot. Green cells are plots owned by Earl Smith. Can Earl walk through every plot he owns (and no other plots) and return to his starting plot without backtracking? For this question, consider backtracking to be any instance where Earl would enter a plot of land he had already entered since leaving his starting plot. (The attached file is located at: data/gaia/5cfb274c-0207-4aa7-9575-6ac0bd95d9b2.xlsx)"
+    "question": "Each cell in the attached spreadsheet represents a plot of land. The color of the cell indicates who owns that plot. Green cells are plots owned by Earl Smith. Can Earl walk through every plot he owns (and no other plots) and return to his starting plot without backtracking? For this question, consider backtracking to be any instance where Earl would enter a plot of land he had already entered since leaving his starting plot."
   },
   {
     "task_id": "cca530fc-4052-43b2-b130-b30968d8aa44",
     "level": 1,
     "file": "data/gaia/cca530fc-4052-43b2-b130-b30968d8aa44.png",
-    "question": "Review the chess position provided in the image. It is black's turn. Provide the correct next move for black which guarantees a win. Please provide your response in algebraic notation. (The attached file is located at: data/gaia/cca530fc-4052-43b2-b130-b30968d8aa44.png)"
+    "question": "Review the chess position provided in the image. It is black's turn. Provide the correct next move for black which guarantees a win. Please provide your response in algebraic notation."
   },
   {
     "task_id": "99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3",
     "level": 1,
     "file": "data/gaia/99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3.mp3",
-    "question": "Hi, I'm making a pie but I could use some help with my shopping list. I have everything I need for the crust, but I'm not sure about the filling. I got the recipe from my friend Aditi, but she left it as a voice memo and the speaker on my phone is buzzing so I can't quite make out what she's saying. Could you please listen to the recipe and list all of the ingredients that my friend described? I only want the ingredients for the filling, as I have everything I need to make my favorite pie crust. I've attached the recipe as Strawberry pie.mp3.\n\nIn your response, please only list the ingredients, not any measurements. So if the recipe calls for \"a pinch of salt\" or \"two cups of ripe strawberries\" the ingredients on the list would be \"salt\" and \"ripe strawberries\".\n\nPlease format your response as a comma separated list of ingredients. Also, please alphabetize the ingredients. (The attached file is located at: data/gaia/99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3.mp3)"
+    "question": "Hi, I'm making a pie but I could use some help with my shopping list. I have everything I need for the crust, but I'm not sure about the filling. I got the recipe from my friend Aditi, but she left it as a voice memo and the speaker on my phone is buzzing so I can't quite make out what she's saying. Could you please listen to the recipe and list all of the ingredients that my friend described? I only want the ingredients for the filling, as I have everything I need to make my favorite pie crust. I've attached the recipe as Strawberry pie.mp3.\n\nIn your response, please only list the ingredients, not any measurements. So if the recipe calls for \"a pinch of salt\" or \"two cups of ripe strawberries\" the ingredients on the list would be \"salt\" and \"ripe strawberries\".\n\nPlease format your response as a comma separated list of ingredients. Also, please alphabetize the ingredients."
   },
   {
     "task_id": "e142056d-56ab-4352-b091-b56054bd1359",
@@ -207,13 +207,13 @@
     "task_id": "df6561b2-7ee5-4540-baab-5095f742716a",
     "level": 2,
     "file": "data/gaia/df6561b2-7ee5-4540-baab-5095f742716a.png",
-    "question": "When you take the average of the standard population deviation of the red numbers and the standard sample deviation of the green numbers in this image using the statistics module in Python 3.11, what is the result rounded to the nearest three decimal points? (The attached file is located at: data/gaia/df6561b2-7ee5-4540-baab-5095f742716a.png)"
+    "question": "When you take the average of the standard population deviation of the red numbers and the standard sample deviation of the green numbers in this image using the statistics module in Python 3.11, what is the result rounded to the nearest three decimal points?"
   },
   {
     "task_id": "cca70ce6-1952-45d2-acd4-80c903b0bc49",
     "level": 2,
     "file": "data/gaia/cca70ce6-1952-45d2-acd4-80c903b0bc49.png",
-    "question": "Look at the attached image. The quiz is scored as follows:\n\nProblems that ask the student to add or subtract fractions: 5 points\nProblems that ask the student to multiply or divide fractions: 10 points\nProblems that ask the student to form an improper fraction: 15 points\nProblems that ask the student to form a mixed number: 20 points\n\nDue to a technical issue that delayed having students take the quiz, the teacher is giving everyone 5 bonus points.\n\nIf you graded the quiz in the attached image, how many points would the student have earned? There is no partial credit. (The attached file is located at: data/gaia/cca70ce6-1952-45d2-acd4-80c903b0bc49.png)"
+    "question": "Look at the attached image. The quiz is scored as follows:\n\nProblems that ask the student to add or subtract fractions: 5 points\nProblems that ask the student to multiply or divide fractions: 10 points\nProblems that ask the student to form an improper fraction: 15 points\nProblems that ask the student to form a mixed number: 20 points\n\nDue to a technical issue that delayed having students take the quiz, the teacher is giving everyone 5 bonus points.\n\nIf you graded the quiz in the attached image, how many points would the student have earned? There is no partial credit."
   },
   {
     "task_id": "624cbf11-6a41-4692-af9c-36b3e5ca3130",
@@ -231,7 +231,7 @@
     "task_id": "32102e3e-d12a-4209-9163-7b3a104efe5d",
     "level": 2,
     "file": "data/gaia/32102e3e-d12a-4209-9163-7b3a104efe5d.xlsx",
-    "question": "The attached spreadsheet shows the inventory for a movie and video game rental store in Seattle, Washington. What is the title of the oldest Blu-Ray recorded in this spreadsheet? Return it as appearing in the spreadsheet. (The attached file is located at: data/gaia/32102e3e-d12a-4209-9163-7b3a104efe5d.xlsx)"
+    "question": "The attached spreadsheet shows the inventory for a movie and video game rental store in Seattle, Washington. What is the title of the oldest Blu-Ray recorded in this spreadsheet? Return it as appearing in the spreadsheet."
   },
   {
     "task_id": "0a65cb96-cb6e-4a6a-8aae-c1084f613456",
@@ -309,7 +309,7 @@
     "task_id": "076c8171-9b3b-49b9-a477-244d2a532826",
     "level": 2,
     "file": "data/gaia/076c8171-9b3b-49b9-a477-244d2a532826.xlsx",
-    "question": "The attached file contains a list of vendors in the Liminal Springs mall, along with each vendor\u2019s monthly revenue and the rent they pay the mall. I want you to find the vendor that makes the least money, relative to the rent it pays. Then, tell me what is listed in the \u201ctype\u201d column for that vendor. (The attached file is located at: data/gaia/076c8171-9b3b-49b9-a477-244d2a532826.xlsx)"
+    "question": "The attached file contains a list of vendors in the Liminal Springs mall, along with each vendor\u2019s monthly revenue and the rent they pay the mall. I want you to find the vendor that makes the least money, relative to the rent it pays. Then, tell me what is listed in the \u201ctype\u201d column for that vendor."
   },
   {
     "task_id": "ad37a656-079a-49f9-a493-7b739c9167d1",
@@ -345,7 +345,7 @@
     "task_id": "8f80e01c-1296-4371-9486-bb3d68651a60",
     "level": 2,
     "file": "data/gaia/8f80e01c-1296-4371-9486-bb3d68651a60.png",
-    "question": "Using bass clef notes, what is the age of someone who has experienced the word spelled out in the sheet music by the note letters the total number of lines and notes minus the number of notes on lines in the image? (The attached file is located at: data/gaia/8f80e01c-1296-4371-9486-bb3d68651a60.png)"
+    "question": "Using bass clef notes, what is the age of someone who has experienced the word spelled out in the sheet music by the note letters the total number of lines and notes minus the number of notes on lines in the image?"
   },
   {
     "task_id": "08cae58d-4084-4616-b6dd-dd6534e4825b",
@@ -357,6 +357,6 @@
     "task_id": "e9a2c537-8232-4c3f-85b0-b52de6bcba99",
     "level": 2,
     "file": "data/gaia/e9a2c537-8232-4c3f-85b0-b52de6bcba99.pdf",
-    "question": "The attached file shows a list of books in the collection of Scribe County Public Library. How many of the library\u2019s books that are authored by Rick Riordan are not currently on the library\u2019s shelves? (The attached file is located at: data/gaia/e9a2c537-8232-4c3f-85b0-b52de6bcba99.pdf)"
+    "question": "The attached file shows a list of books in the collection of Scribe County Public Library. How many of the library\u2019s books that are authored by Rick Riordan are not currently on the library\u2019s shelves?"
   }
 ]

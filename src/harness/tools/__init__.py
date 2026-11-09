@@ -9,15 +9,16 @@ from harness.tools.doc_reader_tools import (
 )
 from harness.tools.media_reader_tools import (
     MEDIA_READER_TOOLS,
+    get_youtube_transcript,
     inspect_image,
     ocr_image,
     transcribe_audio,
 )
 from harness.tools.web_search_tools import (
     WEB_SEARCH_TOOLS,
-    duckduckgo_search,
     file_from_url,
     readable_webpage,
+    tavily_search,
     wikipedia_tool,
 )
 
@@ -26,7 +27,7 @@ __all__ = [
     "DOC_READER_TOOLS",
     "MEDIA_READER_TOOLS",
     "CODE_TOOLS",
-    "duckduckgo_search",
+    "tavily_search",
     "wikipedia_tool",
     "readable_webpage",
     "file_from_url",
@@ -38,6 +39,7 @@ __all__ = [
     "ocr_image",
     "inspect_image",
     "transcribe_audio",
+    "get_youtube_transcript",
     "python_repl",
     "shell_tool",
 ]

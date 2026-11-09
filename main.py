@@ -1,4 +1,6 @@
+import csv
 import json
+import os
 from langchain_core.messages import HumanMessage
 
 from harness.mas_builder.mas_instances import (
@@ -37,12 +39,12 @@ configs = {
     6: conf_6,
 }
 
-tasks_path = "tasks/tasks_benchmark_60_no_solutions.json"
+tasks_path = "stratified_dataset/60_task_subset_test.json"
 
 for conf_id, mas in configs.items():
-    print("#"* 80)
+    print("#" * 80)
     print("Configuration: ", conf_id)
-    print("#"* 80)
+    print("#" * 80)
 
     graph = mas.build_graph()
 
@@ -50,12 +52,16 @@ for conf_id, mas in configs.items():
         tasks = json.load(f)
 
     for i, t in enumerate(tasks):
-        task_id = t["task_id"]
-        question = t["question"]
+        task_id = str(t.get("task_id") or "")
+        question = str(t.get("Question") or t.get("question") or "")
+        file_path = str(t.get("file_path") or t.get("file_name") or t.get("file") or "").strip()
+
+        if file_path:
+            question += f"\n\nProvided file is located at: {file_path}"
 
         mas.set_log_path(f"results/mas_{conf_id}/mas_log_{task_id}.csv")
 
-        print(f"[{i}/{len(tasks)}]")
+        print(f"[{i + 1}/{len(tasks)}] Task ID: {task_id}")
         initial_state = {
             "messages": [HumanMessage(content=question)],
             "task_id": task_id,
@@ -64,6 +70,16 @@ for conf_id, mas in configs.items():
         try:
             res = graph.invoke(initial_state)
             final_msg = res["messages"][-1].content
+
+            # Save clean row to results.csv
+            results_file = "results.csv"
+            file_exists = os.path.exists(results_file) and os.path.getsize(results_file) > 0
+            with open(results_file, "a", newline="", encoding="utf-8") as f_res:
+                writer = csv.writer(f_res)
+                if not file_exists:
+                    writer.writerow(["task_id", "question", "config_id", "final_answer"])
+                writer.writerow([task_id, question, conf_id, final_msg])
+
             print(f"Final Result: {final_msg}\n" + "-" * 50)
         except Exception as e:
             print(f"Error on task {task_id}: {e}\n" + "-" * 50)

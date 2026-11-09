@@ -11,9 +11,9 @@ DOC_READER_DESCRIPTION = (
 )
 
 MEDIA_READER_DESCRIPTION = (
-    "Inspects visual images, diagrams, photos, and audio files (such as JPG, PNG, MP3, WAV). "
-    "Performs OCR to extract visible text, visual reasoning on image contents, and audio transcription. "
-    "Use when image or audio files need to be transcribed, read, or visually analyzed."
+    "Inspects visual images, diagrams, photos, and audio files (JPG, PNG, MP3, WAV), and fetches YouTube transcripts. "
+    "Performs OCR, visual reasoning on images, audio transcription, and YouTube subtitle/transcript retrieval. "
+    "Use when image or audio files need to be transcribed, read, or visually analyzed, or when a YouTube video's dialogue is needed."
 )
 
 CODE_INTERPRETER_DESCRIPTION = (

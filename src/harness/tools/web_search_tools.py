@@ -4,6 +4,8 @@ import warnings
 import requests
 import wikipedia
 from ddg import Duckduckgo
+from tavily import TavilyClient
+from langchain_tavily import TavilySearch
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.tools import tool
@@ -18,27 +20,48 @@ wikipedia.set_user_agent("GAIABenchmarkBot/1.0 (mike.research@gmail.com)")
 _ddg_client = Duckduckgo()
 _markitdown_web_converter = shared_markitdown
 
+
 _raw_wiki_run = WikipediaQueryRun(
     api_wrapper=WikipediaAPIWrapper(top_k_results=2, doc_content_chars_max=4000)
 )
+tavily_key = os.getenv("TAVILY_API_KEY", "").strip()
+_raw_tavily_search = TavilySearch(max_results=5, topic="general", tavily_api_key=tavily_key)
 
 
 @tool
-@my_vcr.use_cassette("duckduckgo_search.yaml")
-def duckduckgo_search(query: str) -> str:
-    """Searches DuckDuckGo for the query and returns titles, snippets, and page URLs."""
-    res = _ddg_client.search(query)
-    if not res.get("success") or not res.get("data"):
-        return f"No results found for '{query}'."
+@my_vcr.use_cassette("tavily_search.yaml")
+def tavily_search(query: str) -> str:
+    """Searches the web using Tavily and returns titles, snippets, and page URLs."""
+    res = _raw_tavily_search.invoke({"query": query})
+    if isinstance(res, dict):
+        results = res.get("results", [])
+        formatted = []
+        for item in results:
+            title = item.get("title", "")
+            url = item.get("url", "")
+            desc = item.get("content", "")[:200]
+            formatted.append(f"Title: {title}\nSnippet: {desc}\nLink: {url}")
+        return "\n\n".join(formatted) if formatted else "No results found."
+    return str(res)
 
-    formatted = []
-    for item in res["data"][:5]:
-        title = item["title"]
-        url = item["url"]
-        desc = item["description"]
-        formatted.append(f"Title: {title}\nSnippet: {desc}\nLink: {url}")
+#got ip banned i think, we let it commented out for now :)
+# @tool
+# @my_vcr.use_cassette("duckduckgo_search.yaml")
+# def duckduckgo_search(query: str) -> str:
+#     """Searches the web for the query and returns titles, snippets, and page URLs."""
 
-    return "\n\n".join(formatted)
+#     res = _ddg_client.search(query)
+#     if not res.get("success") or not res.get("data"):
+#         return f"No results found for '{query}'."
+
+#     formatted = []
+#     for item in res["data"][:5]:
+#         title = item["title"]
+#         url = item["url"]
+#         desc = item["description"]
+#         formatted.append(f"Title: {title}\nSnippet: {desc}\nLink: {url}")
+
+#     return "\n\n".join(formatted)
 
 
 @tool
@@ -78,7 +101,7 @@ def file_from_url(url: str) -> str:
 
 
 WEB_SEARCH_TOOLS = [
-    duckduckgo_search,
+    tavily_search,
     wikipedia_tool,
     readable_webpage,
     file_from_url,
