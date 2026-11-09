@@ -1,3 +1,4 @@
+from config import finalizer_llm_client
 from harness.mas_builder.mas_builder import MultiAgentSystem
 from harness.orchestrators.orch_instances import (
     fdm_orchestrator_thinking_off,
@@ -16,6 +17,7 @@ from harness.react_agents.subagent_instances import (
 mas_1_fdm_orch_llm_sub_no_think = MultiAgentSystem(
     orchestrator=fdm_orchestrator_thinking_off,
     subagents=llm_subagents_thinking_off,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_1/fdm_orch_llm_sub_no_think.csv",
 )
 
@@ -23,6 +25,7 @@ mas_1_fdm_orch_llm_sub_no_think = MultiAgentSystem(
 mas_2_llm_orch_no_think_llm_sub_no_think = MultiAgentSystem(
     orchestrator=llm_orchestrator_thinking_off,
     subagents=llm_subagents_thinking_off,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_2/llm_orch_no_think_llm_sub_no_think.csv",
 )
 
@@ -30,6 +33,7 @@ mas_2_llm_orch_no_think_llm_sub_no_think = MultiAgentSystem(
 mas_3_llm_orch_think_llm_sub_no_think = MultiAgentSystem(
     orchestrator=llm_orchestrator_thinking_on,
     subagents=llm_subagents_thinking_off,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_3/llm_orch_think_llm_sub_no_think.csv",
 )
 
@@ -38,6 +42,7 @@ mas_3_llm_orch_think_llm_sub_no_think = MultiAgentSystem(
 mas_4_llm_orch_no_think_fdm_sub_think = MultiAgentSystem(
     orchestrator=llm_orchestrator_thinking_off,
     subagents=fdm_subagents_thinking_on,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_4/llm_orch_no_think_fdm_sub_think.csv",
 )
 
@@ -45,6 +50,7 @@ mas_4_llm_orch_no_think_fdm_sub_think = MultiAgentSystem(
 mas_5_llm_orch_no_think_fdm_sub_no_think = MultiAgentSystem(
     orchestrator=llm_orchestrator_thinking_off,
     subagents=fdm_subagents_thinking_off,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_5/llm_orch_no_think_fdm_sub_no_think.csv",
 )
 
@@ -52,6 +58,7 @@ mas_5_llm_orch_no_think_fdm_sub_no_think = MultiAgentSystem(
 mas_6_llm_orch_no_think_llm_sub_think = MultiAgentSystem(
     orchestrator=llm_orchestrator_thinking_off,
     subagents=llm_subagents_thinking_on,
+    finalizer_llm_client=finalizer_llm_client,
     log_path="results/mas_6/llm_orch_no_think_llm_sub_think.csv",
 )
 

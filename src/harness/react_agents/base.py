@@ -4,7 +4,8 @@ from typing import Optional
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import Tool
 from langchain_openai import ChatOpenAI
-from harness.utils.prompts import get_subagent_system_prompt, state_to_text
+from harness.utils.react_agent_prompts import get_subagent_system_prompt
+from harness.utils.state_formatter import state_to_text
 from harness.utils import append_to_csv, print_state_to_console_and_md
 
 

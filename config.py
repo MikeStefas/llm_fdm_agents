@@ -75,6 +75,19 @@ llm_client_thinking_on = ChatOpenAI(
 
 llm_client = llm_client_thinking_off
 
+finalizer_llm_client = ChatOpenAI(
+    model=DEFAULT_LLM_MODEL,
+    api_key=OPENROUTER_API_KEY,
+    base_url=OPENROUTER_BASE_URL,
+    temperature=0.0,
+    max_tokens=4096,
+    seed=42,
+    request_timeout=90.0,
+    max_retries=2,
+    reasoning_effort="none",
+    extra_body=PINNED_PROVIDER_EXTRA_BODY,
+)
+
 fdm_client = DeterministicFDMClient(
     model=DEFAULT_FDM_MODEL,
     api_key=OPENROUTER_API_KEY,
@@ -93,6 +106,7 @@ __all__ = [
     "PINNED_PROVIDER_EXTRA_BODY",
     "DeterministicFDMClient",
     "llm_client",
+    "finalizer_llm_client",
     "local_llm_client",
     "llm_client_thinking_off",
     "llm_client_thinking_on",

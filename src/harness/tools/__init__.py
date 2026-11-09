@@ -1,7 +1,6 @@
-from harness.tools.code_tools import CODE_TOOLS, python_ast_repl, python_repl, shell_tool
+from harness.tools.code_tools import CODE_TOOLS, python_repl, shell_tool
 from harness.tools.doc_reader_tools import (
     DOC_READER_TOOLS,
-    convert_file_to_markdown,
     convert_file_to_markdown_and_read,
     file_search_tool,
     list_directory_tool,
@@ -16,9 +15,7 @@ from harness.tools.media_reader_tools import (
 )
 from harness.tools.web_search_tools import (
     WEB_SEARCH_TOOLS,
-    convert_webpage_to_markdown,
     duckduckgo_search,
-    duckduckgo_search_run,
     file_from_url,
     readable_webpage,
     wikipedia_tool,
@@ -30,12 +27,9 @@ __all__ = [
     "MEDIA_READER_TOOLS",
     "CODE_TOOLS",
     "duckduckgo_search",
-    "duckduckgo_search_run",
     "wikipedia_tool",
-    "convert_webpage_to_markdown",
     "readable_webpage",
     "file_from_url",
-    "convert_file_to_markdown",
     "convert_file_to_markdown_and_read",
     "unzip_file",
     "read_file_tool",
@@ -45,6 +39,5 @@ __all__ = [
     "inspect_image",
     "transcribe_audio",
     "python_repl",
-    "python_ast_repl",
     "shell_tool",
 ]

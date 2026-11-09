@@ -96,5 +96,3 @@ CODE_TOOLS = [
     shell_tool,
 ]
 
-# Alias for backwards compatibility
-python_ast_repl = python_repl

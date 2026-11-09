@@ -12,7 +12,7 @@ from typesafe_sdk import Choice, SystemOneResponse, TypeSafeClient
 
 from harness.react_agents.base import BaseReactAgent
 from harness.utils import print_state_to_console_and_md
-from harness.utils.prompts import (
+from harness.utils.react_agent_prompts import (
     FDM_REACT_FINISH_ACTION,
     FDM_REACT_FINISH_DESCRIPTION,
     FDM_REACT_INSTRUCTIONS_TEMPLATE,

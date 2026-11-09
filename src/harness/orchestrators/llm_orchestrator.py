@@ -7,7 +7,10 @@ from langchain_openai import ChatOpenAI
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
 from harness.utils import print_state_to_console_and_md
-from harness.utils.prompts import FINALIZER_OPTION_DESCRIPTION, LLM_ORCHESTRATOR_SYSTEM_PROMPT
+from harness.utils.orchestrator_prompts import (
+    FINALIZER_OPTION_DESCRIPTION,
+    LLM_ORCHESTRATOR_SYSTEM_PROMPT,
+)
 
 
 class LLMOrchestrator(BaseOrchestrator):

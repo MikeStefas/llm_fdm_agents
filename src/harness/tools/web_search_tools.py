@@ -61,10 +61,6 @@ def readable_webpage(url: str) -> str:
         return f"Error converting webpage to markdown: {e}"
 
 
-convert_webpage_to_markdown = readable_webpage
-duckduckgo_search_run = duckduckgo_search
-
-
 @tool
 @my_vcr.use_cassette("file_downloads.yaml")
 def file_from_url(url: str) -> str:
