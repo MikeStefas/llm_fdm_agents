@@ -16,10 +16,18 @@ DEFAULT_FDM_MODEL = "cloudflare/clef-flash"
 LOCAL_LLAMACPP_BASE_URL = "http://127.0.0.1:8080/v1"
 LOCAL_LLAMACPP_MODEL = "/home/mike/.lmstudio/models/LiquidAI/LFM3-1.7B-GGUF/LFM3-1.7B-Q4_K_M.gguf"
 
+
+
 PINNED_PROVIDER_EXTRA_BODY = {
     "provider": {
-        "order": ["SiliconFlow", "DeepInfra"],
-        "quantizations": ["fp8"],
+        "order": ["SiliconFlow"],
+        "allow_fallbacks": False,
+    }
+}
+
+FDM_PROVIDER_EXTRA_BODY = {
+    "provider": {
+        "order": ["DeepInfra"],
         "allow_fallbacks": False,
     }
 }
@@ -33,21 +41,22 @@ class DeterministicFDMClient(TypeSafeClient):
             extra_body={
                 "temperature": 0.0,
                 "seed": 42,
-                **PINNED_PROVIDER_EXTRA_BODY,
+                **FDM_PROVIDER_EXTRA_BODY,
             },
         )
 
 
-local_llm_client = ChatOpenAI(
-    model=LOCAL_LLAMACPP_MODEL,
-    api_key="not-needed",
-    base_url=LOCAL_LLAMACPP_BASE_URL,
-    temperature=0.0,
-    max_tokens=4096,
-    seed=42,
-    request_timeout=120.0,
-    max_retries=1,
-)
+# local_llm_client = ChatOpenAI(
+#     model=LOCAL_LLAMACPP_MODEL,
+#     api_key="not-needed",
+#     base_url=LOCAL_LLAMACPP_BASE_URL,
+#     temperature=0.0,
+#     max_tokens=4096,
+#     seed=42,
+#     request_timeout=120.0,
+#     max_retries=1,
+# )
+local_llm_client = None
 
 llm_client_thinking_off = ChatOpenAI(
     model=DEFAULT_LLM_MODEL,
