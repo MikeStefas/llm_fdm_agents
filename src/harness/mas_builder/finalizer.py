@@ -6,11 +6,11 @@ from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from harness.utils.logger import append_to_csv, print_state_to_console_and_md
-from harness.utils.prompts import (
+from harness.utils.finalizer_prompts import (
     FINALIZER_TASK_PROMPT_TEMPLATE,
     GAIA_FINALIZER_PROMPT,
-    state_to_text,
 )
+from harness.utils.state_formatter import state_to_text
 
 
 class FinalizerNode:

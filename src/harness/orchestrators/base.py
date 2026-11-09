@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 from typesafe_sdk import SystemOneResponse, TypeSafeClient
 from harness.react_agents.base import BaseReactAgent
 from harness.utils import append_to_csv
-from harness.utils.prompts import (
+from harness.utils.orchestrator_prompts import (
     NEXT_SUBAGENT_FIELD_DESCRIPTION,
     SUBAGENT_PROMPT_FIELD_DESCRIPTION,
-    state_to_text,
 )
+from harness.utils.state_formatter import state_to_text
 
 
 class NextSubagentDecision(BaseModel):

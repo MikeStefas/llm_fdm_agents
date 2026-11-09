@@ -5,7 +5,10 @@ from typesafe_sdk import Choice, TypeSafeClient
 from harness.orchestrators.base import BaseOrchestrator
 from harness.react_agents.base import BaseReactAgent
 from harness.utils import print_state_to_console_and_md
-from harness.utils.prompts import FDM_ORCHESTRATOR_INSTRUCTIONS, FINALIZER_OPTION_DESCRIPTION
+from harness.utils.orchestrator_prompts import (
+    FDM_ORCHESTRATOR_INSTRUCTIONS,
+    FINALIZER_OPTION_DESCRIPTION,
+)
 
 
 class FDMOrchestrator(BaseOrchestrator):
