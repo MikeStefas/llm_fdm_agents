@@ -9,6 +9,8 @@ from harness.mas_builder.mas_instances import (
     mas_4_llm_orch_no_think_fdm_sub_think,
     mas_5_llm_orch_no_think_fdm_sub_no_think,
     mas_6_llm_orch_no_think_llm_sub_think,
+    mas_7_fdm_orch_fdm_sub_no_think,
+    mas_8_llm_orch_think_llm_sub_think,
 )
 
 __all__ = [
@@ -23,4 +25,6 @@ __all__ = [
     "mas_4_llm_orch_no_think_fdm_sub_think",
     "mas_5_llm_orch_no_think_fdm_sub_no_think",
     "mas_6_llm_orch_no_think_llm_sub_think",
+    "mas_7_fdm_orch_fdm_sub_no_think",
+    "mas_8_llm_orch_think_llm_sub_think",
 ]

@@ -10,6 +10,8 @@ from harness.mas_builder.mas_instances import (
     mas_4_llm_orch_no_think_fdm_sub_think,
     mas_5_llm_orch_no_think_fdm_sub_no_think,
     mas_6_llm_orch_no_think_llm_sub_think,
+    mas_7_fdm_orch_fdm_sub_no_think,
+    mas_8_llm_orch_think_llm_sub_think,
 )
 
 # 1) FDM orch (no think) + LLM subagent (no think)
@@ -30,6 +32,12 @@ conf_5 = mas_5_llm_orch_no_think_fdm_sub_no_think
 # 6) LLM orch (no think) + LLM subagent (think)
 conf_6 = mas_6_llm_orch_no_think_llm_sub_think
 
+# 7) Full FDM: FDM orch (no think) + FDM subagent (no think)
+conf_7 = mas_7_fdm_orch_fdm_sub_no_think
+
+# 8) Full LLM: LLM orch (think) + LLM subagent (think)
+conf_8 = mas_8_llm_orch_think_llm_sub_think
+
 configs = {
     1: conf_1,
     2: conf_2,
@@ -37,11 +45,16 @@ configs = {
     4: conf_4,
     5: conf_5,
     6: conf_6,
+    7: conf_7,
+    8: conf_8,
 }
 
 tasks_path = "stratified_dataset/60_task_subset_test.json"
 
 for conf_id, mas in configs.items():
+    if conf_id in [1, 2, 3, 4, 5, 6]:
+        continue # configs 1-6 completed in prior runs
+
     print("#" * 80)
     print("Configuration: ", conf_id)
     print("#" * 80)
