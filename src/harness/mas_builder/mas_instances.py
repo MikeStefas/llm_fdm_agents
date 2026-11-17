@@ -78,6 +78,14 @@ mas_8_llm_orch_think_llm_sub_think = MultiAgentSystem(
     log_path="results/mas_8/llm_orch_think_llm_sub_think.csv",
 )
 
+# 9) FDM orch (no think) with LLM subagent (think)
+mas_9_fdm_orch_llm_sub_think = MultiAgentSystem(
+    orchestrator=fdm_orchestrator_thinking_off,
+    subagents=llm_subagents_thinking_on,
+    finalizer_llm_client=finalizer_llm_client,
+    log_path="results/mas_9/fdm_orch_llm_sub_think.csv",
+)
+
 EXPERIMENT_MAS_SYSTEMS = [
     mas_1_fdm_orch_llm_sub_no_think,
     mas_2_llm_orch_no_think_llm_sub_no_think,
@@ -87,6 +95,7 @@ EXPERIMENT_MAS_SYSTEMS = [
     mas_6_llm_orch_no_think_llm_sub_think,
     mas_7_fdm_orch_fdm_sub_no_think,
     mas_8_llm_orch_think_llm_sub_think,
+    mas_9_fdm_orch_llm_sub_think,
 ]
 
 MAS_BY_CONFIG = {
@@ -98,4 +107,5 @@ MAS_BY_CONFIG = {
     "mas_6_llm_orch_no_think_llm_sub_think": mas_6_llm_orch_no_think_llm_sub_think,
     "mas_7_fdm_orch_fdm_sub_no_think": mas_7_fdm_orch_fdm_sub_no_think,
     "mas_8_llm_orch_think_llm_sub_think": mas_8_llm_orch_think_llm_sub_think,
+    "mas_9_fdm_orch_llm_sub_think": mas_9_fdm_orch_llm_sub_think,
 }

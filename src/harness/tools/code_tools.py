@@ -73,7 +73,6 @@ def shell_tool(command: str) -> str:
         "-v",
         f"{DATA_DIR}:/workspace/data:ro",
         "-v",
-        f"{TASKS_DIR}:/workspace/tasks:ro",
         "-w",
         "/workspace",
         "gaia-sandbox",

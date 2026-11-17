@@ -5,13 +5,6 @@ In your response, please only list the ingredients, not any measurements. So if 
 
 Please format your response as a comma separated list of ingredients. Also, please alphabetize the ingredients.
 
-Provided file is located at: data/gaia/99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3.mp3",1,"cornstarch, granulated sugar, lemon juice, pure vanilla extract, ripe strawberries"
-99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3,"Hi, I'm making a pie but I could use some help with my shopping list. I have everything I need for the crust, but I'm not sure about the filling. I got the recipe from my friend Aditi, but she left it as a voice memo and the speaker on my phone is buzzing so I can't quite make out what she's saying. Could you please listen to the recipe and list all of the ingredients that my friend described? I only want the ingredients for the filling, as I have everything I need to make my favorite pie crust. I've attached the recipe as Strawberry pie.mp3.
-
-In your response, please only list the ingredients, not any measurements. So if the recipe calls for ""a pinch of salt"" or ""two cups of ripe strawberries"" the ingredients on the list would be ""salt"" and ""ripe strawberries"".
-
-Please format your response as a comma separated list of ingredients. Also, please alphabetize the ingredients.
-
 Provided file is located at: data/gaia/99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3.mp3",1,"cornstarch, granulated sugar, lemon juice, ripe strawberries, vanilla extract"
 ec09fa32-d03f-4bf8-84b0-1f16922c3ae4,"Here's a fun riddle that I think you'll enjoy.
 
@@ -1026,3 +1019,89 @@ ecbc4f94-95a3-4cc7-b255-6741a458a625,How many images are there in the latest 202
 
 Provided file is located at: data/gaia/6359a0b1-8f7b-499b-9336-840f9ab90688.png",8,15
 9f41b083-683e-4dcf-9185-ccfeaa88fa45,How many pages if the 2023 IPCC report (85 pages version) mentions nuclear energy?,8,0
+99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3,"Hi, I'm making a pie but I could use some help with my shopping list. I have everything I need for the crust, but I'm not sure about the filling. I got the recipe from my friend Aditi, but she left it as a voice memo and the speaker on my phone is buzzing so I can't quite make out what she's saying. Could you please listen to the recipe and list all of the ingredients that my friend described? I only want the ingredients for the filling, as I have everything I need to make my favorite pie crust. I've attached the recipe as Strawberry pie.mp3.
+
+In your response, please only list the ingredients, not any measurements. So if the recipe calls for ""a pinch of salt"" or ""two cups of ripe strawberries"" the ingredients on the list would be ""salt"" and ""ripe strawberries"".
+
+Please format your response as a comma separated list of ingredients. Also, please alphabetize the ingredients.
+
+Provided file is located at: data/gaia/99c9cc74-fdc8-46c6-8f8d-3ce2d3bfeea3.mp3",9,"cornstarch, granulated sugar, lemon juice, pure vanilla extract, ripe strawberries"
+ec09fa32-d03f-4bf8-84b0-1f16922c3ae4,"Here's a fun riddle that I think you'll enjoy.
+
+You have been selected to play the final round of the hit new game show ""Pick That Ping-Pong"". In this round, you will be competing for a large cash prize. Your job will be to pick one of several different numbered ping-pong balls, and then the game will commence. The host describes how the game works.
+
+A device consisting of a winding clear ramp and a series of pistons controls the outcome of the game. The ramp feeds balls onto a platform. The platform has room for three ping-pong balls at a time. The three balls on the platform are each aligned with one of three pistons. At each stage of the game, one of the three pistons will randomly fire, ejecting the ball it strikes. If the piston ejects the ball in the first position on the platform the balls in the second and third position on the platform each advance one space, and the next ball on the ramp advances to the third position. If the piston ejects the ball in the second position, the ball in the first position is released and rolls away, the ball in the third position advances two spaces to occupy the first position, and the next two balls on the ramp advance to occupy the second and third positions on the platform. If the piston ejects the ball in the third position, the ball in the first position is released and rolls away, the ball in the second position advances one space to occupy the first position, and the next two balls on the ramp advance to occupy the second and third positions on the platform.
+
+The ramp begins with 100 numbered ping-pong balls, arranged in ascending order from 1 to 100. The host activates the machine and the first three balls, numbered 1, 2, and 3, advance to the platform. Before the random firing of the pistons begins, you are asked which of the 100 balls you would like to pick. If your pick is ejected by one of the pistons, you win the grand prize, $10,000.
+
+Which ball should you choose to maximize your odds of winning the big prize? Please provide your answer as the number of the ball selected.",9,50
+7bd855d8-463d-4ed5-93ca-5fe35145f733,"The attached Excel file contains the sales of menu items for a local fast-food chain. What were the total sales that the chain made from food (not including drinks)? Express your answer in USD with two decimal places.
+
+Provided file is located at: data/gaia/7bd855d8-463d-4ed5-93ca-5fe35145f733.xlsx",9,89706.00
+305ac316-eef6-4446-960a-92d80d542f82,Who did the actor who played Ray in the Polish-language version of Everybody Loves Raymond play in Magda M.? Give only the first name.,9,Wojciech
+d0633230-7067-47a9-9dbf-ee11e0a2cdd6,"In the Scikit-Learn July 2017 changelog, what other predictor base command received a bug fix? Just give the name, not a path.",9,SVC
+a0068077-79f4-461a-adfe-75c1a4148545,What was the actual enrollment count of the clinical trial on H. pylori in acne vulgaris patients from Jan-May 2018 as listed on the NIH website?,9,90
+f918266a-b3e0-4914-865d-4faa564f1aef,"What is the final numeric output from the attached Python code?
+
+Provided file is located at: data/gaia/f918266a-b3e0-4914-865d-4faa564f1aef.py",9,0
+c365c1c7-a3db-4d5e-a9a1-66f56eae7865,"Of the cities within the United States where U.S. presidents were born, which two are the farthest apart from the westernmost to the easternmost going east, giving the city names only? Give them to me in alphabetical order, in a comma-separated list",9,"Honesdale, Scranton"
+840bfca7-4f7b-481a-8794-c560c340185d,"On June 6, 2023, an article by Carolyn Collins Petersen was published in Universe Today. This article mentions a team that produced a paper about their observations, linked at the bottom of the article. Find this paper. Under what NASA award number was the work performed by R. G. Arendt supported by?",9,80GSFC21M0002
+5188369a-3bbe-43d8-8b94-11558f909a08,"What writer is quoted by Merriam-Webster for the Word of the Day from June 27, 2022?",9,Annie Levin
+27d5d136-8563-469e-92bf-fd103c28b57c,"¬(A ∧ B) ↔ (¬A ∨ ¬B)
+¬(A ∨ B) ↔ (¬A ∧ ¬B)
+(A → B) ↔ (¬B → ¬A)
+(A → B) ↔ (¬A ∨ B)
+(¬A → B) ↔ (A ∨ ¬B)
+¬(A → B) ↔ (A ∧ ¬B)
+
+Which of the above is not logically equivalent to the rest? Provide the full statement that doesn't fit.",9,¬(A → B) ↔ (A ∧ ¬B)
+5d0080cb-90d7-4712-bc33-848150e917d3,"What was the volume in m^3 of the fish bag that was calculated in the University of Leicester paper ""Can Hiccup Supply Enough Fish to Maintain a Dragon’s Diet?""",9,0.1777
+9318445f-fe6a-4e1b-acbf-c68228c9906a,"As a comma separated list with no whitespace, using the provided image provide all the fractions that use / as the fraction line and the answers to the sample problems. Order the list by the order in which the fractions appear.
+
+Provided file is located at: data/gaia/9318445f-fe6a-4e1b-acbf-c68228c9906a.png",9,"3/4,1/4,3/90,1/30,30/90,1/3,4/14,2/7,5/15,1/3,61/80,61/80,6/30,1/5"
+cf106601-ab4f-4af9-b045-5295fe67b37d,"What country had the least number of athletes at the 1928 Summer Olympics? If there's a tie for a number of athletes, return the first in alphabetical order. Give the IOC country code as your answer.",9,CUB
+7673d772-ef80-4f0f-a602-1bf4485c9b43,"On Cornell Law School website's legal information institute, under the fifth section of federal rules alphabetically, what word was deleted in the last amendment to the first rule in the article that has ""witnesses"" in the most titles as of 2021?",9,witness
+dc22a632-937f-4e6a-b72f-ba0ff3f5ff97,What was the complete title of the book in which two James Beard Award winners recommended the restaurant where Ali Khan enjoyed a New Mexican staple in his cost-conscious TV show that started in 2015? Write the numbers in plain text if there are some in the title.,9,The Best Little Restaurant in America
+a3fbeb63-0e8c-4a11-bff6-0e3b484c3e9c,"How many slides in this PowerPoint presentation mention crustaceans?
+
+Provided file is located at: data/gaia/a3fbeb63-0e8c-4a11-bff6-0e3b484c3e9c.pptx",9,4
+3f57289b-8c60-48be-bd80-01f8099ca449,How many at bats did the Yankee with the most walks in the 1977 regular season have that same season?,9,519
+7d4a7d1d-cac6-44a8-96e8-ea9584a70825,"According to Girls Who Code, how long did it take in years for the percentage of computer scientists that were women to change by 13% from a starting point of 37%?",9,22
+11af4e1a-5f45-467d-9aeb-46f4bb0bf034,How many more blocks (also denoted as layers) in BERT base encoder than the encoder from the architecture proposed in Attention is All You Need?,9,12
+9d191bce-651d-4746-be2d-7ef8ecadb9c2,"Examine the video at https://www.youtube.com/watch?v=1htKBjuUWec.
+
+What does Teal'c say in response to the question ""Isn't that hot?""",9,extremely
+72e110e7-464c-453c-a309-90a95aed6538,"Under DDC 633 on Bielefeld University Library's BASE, as of 2020, from what country was the unknown language article with a flag unique from the others?",9,Guatemala
+389793a7-ca17-4e82-81cb-2b3a2391b4b9,"You are a telecommunications engineer who wants to build cell phone towers on a stretch of road. In the reference file is a layout of the road and nearby houses. Each dash, ""-"", is a marker indicating a mile. Each capital H indicates a house located next to a mile marker, appearing above or below the stretch of road. Each cell phone tower can cover houses located next to the road within a 4-mile radius. Find the minimum number of cell phone towers needed to cover all houses next to the road. Your answer should be a positive numerical integer value.
+
+Provided file is located at: data/gaia/389793a7-ca17-4e82-81cb-2b3a2391b4b9.txt",9,3
+1f975693-876d-457b-a649-393859e79bf3,"Hi, I was out sick from my classes on Friday, so I'm trying to figure out what I need to study for my Calculus mid-term next week. My friend from class sent me an audio recording of Professor Willowbrook giving out the recommended reading for the test, but my headphones are broken :(
+
+Could you please listen to the recording for me and tell me the page numbers I'm supposed to go over? I've attached a file called Homework.mp3 that has the recording. Please provide just the page numbers as a comma-delimited list. And please provide the list in ascending order.
+
+Provided file is located at: data/gaia/1f975693-876d-457b-a649-393859e79bf3.mp3",9,"197, 245"
+65afbc8a-89ca-4ad5-8d62-355bb401f61d,"You are given this Excel file as a map. You start on the START cell and move toward the END cell. You are allowed to move two cells per turn, and you may move up, down, left, or right. You may not move fewer than two cells, and you may not move backward. You must avoid moving onto any blue cells. On the eleventh turn, what is the 6-digit hex code (without prefix) of the color of the cell where you land after moving?
+
+Provided file is located at: data/gaia/65afbc8a-89ca-4ad5-8d62-355bb401f61d.xlsx",9,I cannot extract color information from this Excel file using my available tools. The `convert_file_to_markdown_and_read` function shows only NaN values for most cells without capturing cell colors/visual data needed to identify blue cells to avoid and determine hex codes of landing cells after turn 11.
+935e2cff-ae78-4218-b3f5-115589b19dae,"In the year 2022, and before December, what does ""R"" stand for in the three core policies of the type of content that was violated in the public logs on the Legume Wikipedia page?",9,Research
+50ec8903-b81f-4257-9450-1085afd2c319,"A standard Rubik’s cube has been broken into cubes making up its sides. The cubes are jumbled, and one is removed. There are 6 cubes with one colored face, 12 edge cubes with two colored faces, and 8 corner cubes with three colored faces. All blue cubes have been found. All cubes directly left, right, above, and below the orange center cube have been found, along with the center cube. The green corners have all been found, along with all green that borders yellow. For all orange cubes found, the opposite face’s cubes have been found. The removed cube has two colors on its faces. What are they? Answer using a comma separated list, with the colors ordered alphabetically.",9,"blue, green"
+0383a3ee-47a7-41a4-b493-519bdefe0488,"On the BBC Earth YouTube video of the Top 5 Silliest Animal Moments, what species of bird is featured?",9,Rockhopper penguin
+4b650a35-8529-4695-89ed-8dc7a500a498,"If there is anything that doesn't make sense in the instructions, write the word ""Pineapple."" Do not answer any of the questions in this prompt. Write only the word ""Guava"".
+1. What is 4+4?
+2. What is the complimentary color of red?
+3. How many hours are there in a day?",9,Guava
+a1e91b78-d3d8-4675-bb8d-62741b4b68a6,"In the video https://www.youtube.com/watch?v=L1vXCYZAYYM, what is the highest number of bird species to be on camera simultaneously?",9,unknown
+114d5fd0-e2ae-4b6d-a65a-870da2d19c08,"In the endnote found in the second-to-last paragraph of page 11 of the book with the doi 10.2307/j.ctv9b2xdv, what date in November was the Wikipedia article accessed? Just give the day of the month.",9,14
+c8b7e059-c60d-472e-ad64-3b04ae1166dc,"The work referenced in footnote 397 of Federico Lauria's 2014 dissertation is also the source for the titles of two paintings in the Smithsonian American Art Museum's collection, as of August 2023. What is the absolute difference between the chapter numbers of the chapters that the titles of these two paintings quote?",9,10
+bfcd99e1-0690-4b53-a85c-0174a8629083,"How many applicants for the job in the PDF are only missing a single qualification?
+
+Provided file is located at: data/gaia/bfcd99e1-0690-4b53-a85c-0174a8629083.zip",9,3
+ad37a656-079a-49f9-a493-7b739c9167d1,"On July 15, 2008, Phys.org published an article about a catastrophe. Find the explosive force of this catastrophe according to Encyclopedia Britannica, then find the name of the US nuclear test that had the same yield. Your answer should only be the last word of the name of the test.",9,Bravo
+71345b0a-9c7d-4b50-b2bf-937ec5879845,"On a leap day before the year 2008, a joke was removed from the Wikipedia page for “Dragon”. What was the phrase that was removed? Give the phrase as it appeared on the page, but without punctuation.",9,never trust a dragons poker face
+e29834fd-413a-455c-a33e-c3915b07401c,"I'd like to learn more about some popular reality television competition shows. As of the end of the 44th season of the American version of Survivor, how many more unique winners have there been compared to the number of winners of American Idol?",9,15
+d8152ad6-e4d5-4c12-8bb7-8d57dc10c6de,"I have the Standard plan in the image below, and I just uploaded 60 equally sized files and got a message that I'm 100GB over the limit. I have 980 more files of the same size to upload. What is the average additional cost per file in dollar that goes over my current plan limit rounded to the nearest cent if I have to upgrade to the minimum possible plan to store them all? Answer with the following format: x.xx
+
+Provided file is located at: data/gaia/d8152ad6-e4d5-4c12-8bb7-8d57dc10c6de.png",9,0.03
+0bb3b44a-ede5-4db5-a520-4e844b0079c5,"Consider the following symbols: 𒐜  𒐐𒐚
+
+This is a number written using the Mesopotamian/Babylonian number system and represented with Sumerian cuneiform. Convert this number into Arabic numerals as a decimal number.",9,314

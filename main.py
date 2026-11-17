@@ -12,6 +12,7 @@ from harness.mas_builder.mas_instances import (
     mas_6_llm_orch_no_think_llm_sub_think,
     mas_7_fdm_orch_fdm_sub_no_think,
     mas_8_llm_orch_think_llm_sub_think,
+    mas_9_fdm_orch_llm_sub_think,
 )
 
 # 1) FDM orch (no think) + LLM subagent (no think)
@@ -38,6 +39,9 @@ conf_7 = mas_7_fdm_orch_fdm_sub_no_think
 # 8) Full LLM: LLM orch (think) + LLM subagent (think)
 conf_8 = mas_8_llm_orch_think_llm_sub_think
 
+# 9) FDM orch (no think) + LLM subagent (think)
+conf_9 = mas_9_fdm_orch_llm_sub_think
+
 configs = {
     1: conf_1,
     2: conf_2,
@@ -47,12 +51,13 @@ configs = {
     6: conf_6,
     7: conf_7,
     8: conf_8,
+    9: conf_9,
 }
 
 tasks_path = "stratified_dataset/60_task_subset_test.json"
 
 for conf_id, mas in configs.items():
-    if conf_id in [1, 2, 3, 4, 5, 6]:
+    if conf_id in [1, 2, 3, 4, 5, 6,7,8]:
         continue # configs 1-6 completed in prior runs
 
     print("#" * 80)
@@ -96,3 +101,7 @@ for conf_id, mas in configs.items():
             print(f"Final Result: {final_msg}\n" + "-" * 50)
         except Exception as e:
             print(f"Error on task {task_id}: {e}\n" + "-" * 50)
+
+        # THIS IS A FIX BECAUSE THE ZIPPED FILES PERSISTED >:(
+        finally:
+            os.system("rm -rf data/gaia/*/")

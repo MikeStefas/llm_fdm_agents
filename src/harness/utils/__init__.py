@@ -12,7 +12,6 @@ from harness.utils.finalizer_prompts import (
     GAIA_FINALIZER_PROMPT,
 )
 from harness.utils.logger import LOG_FIELDNAMES, append_to_csv, print_state_to_console_and_md
-from harness.utils.official_gaia_scorer import question_scorer
 from harness.utils.orchestrator_prompts import (
     FDM_ORCHESTRATOR_INSTRUCTIONS,
     FINALIZER_OPTION_DESCRIPTION,
@@ -37,7 +36,6 @@ from harness.utils import (
     descriptions,
     finalizer_prompts,
     logger,
-    official_gaia_scorer,
     orchestrator_prompts,
     react_agent_prompts,
     state_formatter,
@@ -49,7 +47,6 @@ __all__ = [
     "descriptions",
     "finalizer_prompts",
     "logger",
-    "official_gaia_scorer",
     "orchestrator_prompts",
     "react_agent_prompts",
     "state_formatter",
@@ -84,8 +81,6 @@ __all__ = [
     "SUBAGENT_SYSTEM_PROMPTS",
     "get_subagent_system_prompt",
     "state_to_text",
-    # Scorer
-    "question_scorer",
     # Deterministic FDM Client
     "DeterministicFDMClient",
 ]
