@@ -43,23 +43,24 @@ conf_8 = mas_8_llm_orch_think_llm_sub_think
 conf_9 = mas_9_fdm_orch_llm_sub_think
 
 configs = {
-    1: conf_1,
-    2: conf_2,
-    3: conf_3,
-    4: conf_4,
-    5: conf_5,
-    6: conf_6,
-    7: conf_7,
+    #1: conf_1,
+    #2: conf_2,
+    #3: conf_3,
+    #4: conf_4,
+    #5: conf_5,
+    #6: conf_6,
+    #7: conf_7,
     8: conf_8,
-    9: conf_9,
+   # 9: conf_9,
 }
 
 tasks_path = "stratified_dataset/60_task_subset_test.json"
 
-for conf_id, mas in configs.items():
-    if conf_id in [1, 2, 3, 4, 5, 6,7,8]:
-        continue # configs 1-6 completed in prior runs
+target_rerun_task_ids = [
+    "04a04a9b-226c-43fd-b319-d5e89743676f",  # [47/60]
+]
 
+for conf_id, mas in configs.items():
     print("#" * 80)
     print("Configuration: ", conf_id)
     print("#" * 80)
@@ -69,8 +70,24 @@ for conf_id, mas in configs.items():
     with open(tasks_path, "r", encoding="utf-8") as f:
         tasks = json.load(f)
 
+    # Collect task_ids already completed for this conf_id in results.csv
+    completed_task_ids = set()
+    results_file = "results.csv"
+    if os.path.exists(results_file):
+        with open(results_file, "r", encoding="utf-8") as f_res:
+            reader = csv.reader(f_res)
+            header = next(reader, None)
+            for row in reader:
+                if len(row) >= 3 and str(row[2]) == str(conf_id):
+                    completed_task_ids.add(row[0])
+
     for i, t in enumerate(tasks):
         task_id = str(t.get("task_id") or "")
+        if task_id not in target_rerun_task_ids:
+            continue
+        if task_id in completed_task_ids:
+            print(f"Skipping task [{i + 1}/{len(tasks)}] {task_id} (already completed for conf {conf_id})")
+            continue
         question = str(t.get("Question") or t.get("question") or "")
         file_path = str(t.get("file_path") or t.get("file_name") or t.get("file") or "").strip()
 

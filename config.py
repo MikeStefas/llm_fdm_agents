@@ -9,6 +9,7 @@ load_dotenv(override=True)
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 OPENROUTER_FDM_BASE_URL = "https://openrouter.ai/api"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 DEFAULT_LLM_MODEL = "qwen/qwen3.5-9b"
 DEFAULT_FDM_MODEL = "cloudflare/clef-flash"
@@ -111,6 +112,7 @@ __all__ = [
     "OPENROUTER_API_KEY",
     "OPENROUTER_BASE_URL",
     "OPENROUTER_FDM_BASE_URL",
+    "GEMINI_API_KEY",
     "DEFAULT_LLM_MODEL",
     "DEFAULT_FDM_MODEL",
     "LOCAL_LLAMACPP_BASE_URL",

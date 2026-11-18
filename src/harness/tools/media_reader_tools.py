@@ -11,7 +11,7 @@ from transformers import WhisperForConditionalGeneration, WhisperProcessor
 from langchain_community.document_loaders import YoutubeLoader
 
 from harness.utils.vcr_config import my_vcr
-from config import PINNED_PROVIDER_EXTRA_BODY
+from config import PINNED_PROVIDER_EXTRA_BODY, GEMINI_API_KEY
 
 
 def convert_to_base64(file_path: str, max_dimension: int = 768) -> str:
@@ -170,6 +170,46 @@ def get_youtube_transcript(url: str) -> str:
         return f"Could not retrieve YouTube transcript for '{url}': {e}"
 
 
+@tool
+@my_vcr.use_cassette("analyze_video.yaml")
+def analyze_video(
+    video_url: str,
+    prompt: str = "Analyze this video in detail. Describe what is visible on camera, including any specific objects, animals, text, actions, or counts requested.",
+) -> str:
+    """Visually analyzes a video (e.g. YouTube URL) using Google Gemini multimodal video understanding.
+    Use this when you need to visually inspect video frames, count objects or animals on camera,
+    read text shown in a video, or describe visual actions where subtitles/transcripts are insufficient or missing.
+
+    Args:
+        video_url: YouTube URL (e.g. 'https://www.youtube.com/watch?v=...') or web video link.
+        prompt: The specific question or visual detail to look for in the video.
+    """
+    try:
+        from google import genai
+        from google.genai import types
+
+        if not GEMINI_API_KEY:
+            return "GEMINI_API_KEY missing"
+
+        clean_url = video_url.strip().strip("'\"")
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                types.Part.from_uri(
+                    file_uri=clean_url,
+                    mime_type="video/mp4",
+                ),
+                prompt,
+            ],
+            config=types.GenerateContentConfig(
+                temperature=0.0,
+                seed=42,
+            ),
+        )
+        return str(response.text or "").strip() or "Video analysis produced no visual description."
+    except Exception as e:
+        return f"Error analyzing video '{video_url}': {e}"
 
 
 MEDIA_READER_TOOLS = [
@@ -177,4 +217,5 @@ MEDIA_READER_TOOLS = [
     inspect_image,
     transcribe_audio,
     get_youtube_transcript,
+    analyze_video,
 ]
