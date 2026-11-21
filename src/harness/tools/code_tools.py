@@ -5,11 +5,9 @@ import warnings
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+from harness.utils.workspace import DATA_DIR, SHARED_DIR
 
-HARNESS_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
-DATA_DIR = os.path.join(HARNESS_ROOT, "data")
-TASKS_DIR = os.path.join(HARNESS_ROOT, "tasks")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class PythonCodeInput(BaseModel):
@@ -25,8 +23,10 @@ def python_repl(code: str) -> str:
     """Execute Python code safely inside an isolated Docker container with pre-installed scientific libraries.
 
     Available libraries: pandas, numpy, scipy, sympy, mpmath, pyarrow, fastparquet, openpyxl,
-    pypdf, pdfplumber, python-docx, python-pptx, biopython, python-chess, pillow, opencv, pydub, bs4, requests.
+    xlsxwriter, xlrd, pypdf, pdfplumber, python-docx, python-pptx, biopython, python-chess, pillow,
+    opencv, pydub, beautifulsoup4, requests, tabulate, markitdown, librosa, soundfile, stockfish.
     The GAIA data directory is mounted read-only at 'data/' and can be accessed directly.
+    The shared workspace directory is mounted read-write at 'shared/' and '/workspace/shared/'.
     """
     cmd = [
         "docker",
@@ -40,7 +40,9 @@ def python_repl(code: str) -> str:
         "-v",
         f"{DATA_DIR}:/workspace/data:ro",
         "-v",
-        f"{TASKS_DIR}:/workspace/tasks:ro",  
+        f"{SHARED_DIR}:/workspace/shared:rw",
+        "-v",
+        f"{SHARED_DIR}:{SHARED_DIR}:rw",
         "-w",
         "/workspace",
         "gaia-sandbox",
@@ -73,6 +75,9 @@ def shell_tool(command: str) -> str:
         "-v",
         f"{DATA_DIR}:/workspace/data:ro",
         "-v",
+        f"{SHARED_DIR}:/workspace/shared:rw",
+        "-v",
+        f"{SHARED_DIR}:{SHARED_DIR}:rw",
         "-w",
         "/workspace",
         "gaia-sandbox",

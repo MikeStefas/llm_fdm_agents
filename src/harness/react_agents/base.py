@@ -27,7 +27,7 @@ class BaseReactAgent(ABC):
         description: str,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 10,
+        max_iter: int = 12,
     ) -> None:
         self.subagent_name = subagent_name
         self.tools = tools

@@ -5,7 +5,8 @@ WEB_SEARCH_DESCRIPTION = (
 )
 
 DOC_READER_DESCRIPTION = (
-    "Reads, searches, and extracts content from text documents and spreadsheets (such as PDF, DOCX, XLSX, CSV, TXT, Markdown). "
+    "Reads, searches, and extracts text and tables from documents and spreadsheets (PDF, DOCX, XLSX, CSV, PPTX, TXT). "
+    "Renders document pages or presentation slides into high-resolution images when visual understanding of figures, diagrams, charts, layouts, or colors is needed. "
     "Explores directory listings, locates files, and unpacks archive files (such as ZIP or TAR). "
     "Use when examining local documents, workspace files, or extracted archives."
 )
@@ -18,7 +19,7 @@ MEDIA_READER_DESCRIPTION = (
 
 CODE_INTERPRETER_DESCRIPTION = (
     "Executes Python code and shell commands to perform calculations, programmatic data manipulation (e.g. Pandas/CSV/JSON), and algorithmic problem solving. "
-    "Use when numerical computation, data transformations, or custom script execution is required."
+    "Use when numerical computation or data transformations are required, or as a fallback when another subagent failed or lacked the specific tool, as self-coding can directly inspect files and compute the solution."
 )
 
 FINALIZER_DESCRIPTION = (

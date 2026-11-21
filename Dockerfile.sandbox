@@ -4,7 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     libgl1 \
     libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    libsndfile1 \
+    stockfish \
+    && rm -rf /var/lib/apt/lists/* \
+    && if [ -f /usr/games/stockfish ] && [ ! -f /usr/bin/stockfish ]; then ln -s /usr/games/stockfish /usr/bin/stockfish; fi
 
 #gaia packages
 RUN pip install --no-cache-dir \
@@ -28,5 +31,11 @@ RUN pip install --no-cache-dir \
     opencv-python-headless \
     pydub \
     beautifulsoup4 \
-    requests
+    requests \
+    tabulate \
+    markitdown \
+    librosa \
+    soundfile \
+    stockfish
+
 

@@ -21,7 +21,7 @@ class LLMReactAgent(BaseReactAgent):
         description: str,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 10,
+        max_iter: int = 12,
     ) -> None:
         super().__init__(
             subagent_name=subagent_name,
@@ -113,16 +113,17 @@ class LLMReactAgent(BaseReactAgent):
                     output_text=f"Tool: {active_tool_call['name']}\nArgs: {json.dumps(active_tool_call['args'])}\nObservation: {tool_msg.content}",
                 )
 
-            # max_iter num surpassed so conclude
-            if final_res is None:
-                return self.synthesize_fallback(
-                    messages=messages,
-                    substep_count=substep_count,
-                    state_step=state_step,
-                    task_id=task_id,
-                )
+            # If final response has substantive text, return it
+            if final_res is not None and str(final_res.content).strip():
+                return str(final_res.content).strip()
 
-            return str(final_res.content)
+            # Otherwise (max_iter surpassed or model returned empty content on tool stop), synthesize summary
+            return self.synthesize_fallback(
+                messages=messages,
+                substep_count=substep_count,
+                state_step=state_step,
+                task_id=task_id,
+            )
         except Exception as e:
             return self.handle_unhandled_exception(
                 e=e,

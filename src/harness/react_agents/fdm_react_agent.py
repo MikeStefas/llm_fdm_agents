@@ -32,7 +32,7 @@ class FDMReactAgent(BaseReactAgent):
         fdm_client: TypeSafeClient,
         llm_client: ChatOpenAI,
         log_path: Optional[str] = None,
-        max_iter: int = 10,
+        max_iter: int = 12,
     ) -> None:
         super().__init__(
             subagent_name=subagent_name,

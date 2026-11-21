@@ -5,18 +5,24 @@ from harness.tools.doc_reader_tools import (
     file_search_tool,
     list_directory_tool,
     read_file_tool,
+    render_document_to_image,
+    unpack_archive,
     unzip_file,
 )
 from harness.tools.media_reader_tools import (
     MEDIA_READER_TOOLS,
+    analyze_video,
     get_youtube_transcript,
     inspect_image,
     ocr_image,
     transcribe_audio,
 )
 from harness.tools.web_search_tools import (
+    BROWSER_TOOLS,
     WEB_SEARCH_TOOLS,
     file_from_url,
+    get_async_playwright_tools,
+    get_playwright_tools,
     readable_webpage,
     tavily_search,
     wikipedia_tool,
@@ -24,15 +30,20 @@ from harness.tools.web_search_tools import (
 
 __all__ = [
     "WEB_SEARCH_TOOLS",
+    "BROWSER_TOOLS",
     "DOC_READER_TOOLS",
     "MEDIA_READER_TOOLS",
     "CODE_TOOLS",
+    "get_playwright_tools",
+    "get_async_playwright_tools",
     "tavily_search",
     "wikipedia_tool",
     "readable_webpage",
     "file_from_url",
     "convert_file_to_markdown_and_read",
+    "render_document_to_image",
     "unzip_file",
+    "unpack_archive",
     "read_file_tool",
     "file_search_tool",
     "list_directory_tool",
@@ -40,6 +51,7 @@ __all__ = [
     "inspect_image",
     "transcribe_audio",
     "get_youtube_transcript",
+    "analyze_video",
     "python_repl",
     "shell_tool",
 ]

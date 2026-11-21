@@ -6,12 +6,17 @@ import wikipedia
 from ddg import Duckduckgo
 from tavily import TavilyClient
 from langchain_tavily import TavilySearch
+from langchain_community.agent_toolkits.playwright.toolkit import PlayWrightBrowserToolkit
+from langchain_community.tools.playwright.utils import (
+    create_sync_playwright_browser,
+)
 from langchain_community.tools.wikipedia.tool import WikipediaQueryRun
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
 from langchain_core.tools import tool
 
 from harness.utils.markitdown_config import shared_markitdown
 from harness.utils.vcr_config import my_vcr
+from harness.utils.workspace import SHARED_DIR
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -19,6 +24,17 @@ wikipedia.set_user_agent("GAIABenchmarkBot/1.0 (mike.research@gmail.com)")
 
 _ddg_client = Duckduckgo()
 _markitdown_web_converter = shared_markitdown
+
+
+def get_playwright_tools(headless: bool = True):
+    """Instantiate and return the default PlayWright browser tools with a synchronous browser."""
+    browser = create_sync_playwright_browser(headless=headless)
+    toolkit = PlayWrightBrowserToolkit.from_browser(sync_browser=browser)
+    return toolkit.get_tools()
+
+
+get_async_playwright_tools = get_playwright_tools
+BROWSER_TOOLS = get_playwright_tools(headless=True)
 
 
 _raw_wiki_run = WikipediaQueryRun(
@@ -87,15 +103,17 @@ def readable_webpage(url: str) -> str:
 @tool
 @my_vcr.use_cassette("file_downloads.yaml")
 def file_from_url(url: str) -> str:
-    """Downloads a file from a URL to a local temporary file and returns its path."""
+    """Downloads a file from a URL to the shared workspace directory and returns its path."""
     try:
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         response = requests.get(url, headers=headers, timeout=20)
         response.raise_for_status()
         _, ext = os.path.splitext(url.split("?")[0])
-        with tempfile.NamedTemporaryFile(delete=False, suffix=ext or ".tmp") as tmp:
+        with tempfile.NamedTemporaryFile(dir=SHARED_DIR, delete=False, suffix=ext or ".tmp") as tmp:
             tmp.write(response.content)
-            return tmp.name
+            tmp_path = tmp.name
+        os.chmod(tmp_path, 0o666)
+        return tmp_path
     except Exception as e:
         return f"Error downloading file: {e}"
 
@@ -105,4 +123,16 @@ WEB_SEARCH_TOOLS = [
     wikipedia_tool,
     readable_webpage,
     file_from_url,
+    *BROWSER_TOOLS,
+]
+
+__all__ = [
+    "WEB_SEARCH_TOOLS",
+    "BROWSER_TOOLS",
+    "get_playwright_tools",
+    "get_async_playwright_tools",
+    "tavily_search",
+    "wikipedia_tool",
+    "readable_webpage",
+    "file_from_url",
 ]

@@ -32,6 +32,12 @@ from harness.utils.react_agent_prompts import (
 )
 from harness.utils.state_formatter import state_to_text
 from harness.utils.vcr_config import my_vcr
+from harness.utils.workspace import (
+    DATA_DIR,
+    HARNESS_ROOT,
+    SHARED_DIR,
+    reset_shared_directory,
+)
 from harness.utils import (
     descriptions,
     finalizer_prompts,
@@ -40,6 +46,7 @@ from harness.utils import (
     react_agent_prompts,
     state_formatter,
     vcr_config,
+    workspace,
 )
 
 __all__ = [
@@ -51,6 +58,12 @@ __all__ = [
     "react_agent_prompts",
     "state_formatter",
     "vcr_config",
+    "workspace",
+    # Workspace
+    "HARNESS_ROOT",
+    "SHARED_DIR",
+    "DATA_DIR",
+    "reset_shared_directory",
     # VCR
     "my_vcr",
     # Logger
